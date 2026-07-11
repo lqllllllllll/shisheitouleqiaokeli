@@ -1,0 +1,2873 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>巧克力失窃案</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", sans-serif;
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+        /* 入口页面 */
+        #entry-page {
+            width: 100%;
+            height: 100%;
+            background-color: #f5f0e1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+        }
+        /* 新增：入口标题花字 */
+        .entry-title {
+            font-family: "楷体", "华文行楷", cursive;
+            font-size: 42px;
+            color: #8b5a2b;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(139, 90, 43, 0.3);
+            margin-bottom: 20px;
+        }
+        /* 新增：入口提示白框 */
+        .entry-tip-box {
+            width: 80%;
+            max-width: 500px;
+            height: 33vh;
+            background: #ffffff;
+            border: 2px solid #8b5a2b;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-y: auto;
+            line-height: 1.8;
+            color: #5c3317;
+            font-size: 15px;
+            margin-bottom: 30px;
+        }
+        .tip-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        .entry-btn {
+            width: 240px;
+            padding: 14px 0;
+            font-size: 18px;
+            border: 2px solid #8b5a2b;
+            background-color: #fff8e7;
+            color: #5c3317;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 15px;
+        }
+        .entry-btn:hover {
+            background-color: #8b5a2b;
+            color: white;
+        }
+        /* 游戏主容器 */
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: none;
+        }
+        /* 视图切换按钮 */
+        .view-switch {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 9999;
+            display: flex;
+            gap: 8px;
+        }
+        .switch-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid #ccc;
+            background: white;
+            border-radius: 6px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .switch-btn:hover {
+            background: #f0f0f0;
+        }
+        /* 通用视图容器 */
+        .view {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #view-a {
+            background: white;
+            display: none;
+        }
+        #view-b {
+            background: #ededed;
+            display: none;
+        }
+        /* 顶部消息提示 */
+        #top-tip {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 8px;
+            background: #07c160;
+            color: white;
+            text-align: center;
+            font-size: 14px;
+            z-index: 9998;
+            display: none;
+            cursor: pointer;
+        }
+        /* 弹窗通用样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        .modal-content {
+            background: #f5f0e1;
+            padding: 30px;
+            border-radius: 8px;
+            position: relative;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .modal-content.show {
+            opacity: 1;
+        }
+        /* 个人介绍弹窗 */
+        .profile-modal .modal-content {
+            width: 50%;
+            aspect-ratio: 1 / 1;
+            background: #f5f0e1;
+            padding: 25px;
+        }
+        .profile-name {
+            font-size: 22px;
+            font-weight: bold;
+            font-family: "黑体";
+            text-align: left;
+        }
+        .profile-title {
+            text-align: center;
+            font-family: "楷体";
+            font-size: 16px;
+            margin: 10px 0 15px 0;
+        }
+        .profile-info p {
+            font-family: "宋体";
+            font-size: 15px;
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        .profile-close {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            color: #5c3317;
+            font-size: 22px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        /* 选择框样式 */
+        .choice-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            z-index: 10001;
+            display: none;
+            text-align: center;
+            min-width: 280px;
+        }
+        .choice-btns {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        .btn-yes {
+            padding: 8px 24px;
+            background: #07c160;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-no {
+            padding: 8px 24px;
+            background: #e64340;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        /* 结局弹窗 */
+        .ending-modal .modal-content {
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            background: #f5f0e1;
+        }
+        .ending-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #5c3317;
+        }
+        .ending-text p {
+            margin: 10px 0;
+            opacity: 0;
+            transition: opacity 1s ease;
+            line-height: 1.8;
+        }
+        .ending-text p.show {
+            opacity: 1;
+        }
+        .ending-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            color: #e64340;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        /* 证据输入弹窗 */
+        .evidence-modal .modal-content {
+            width: 90%;
+            background: #f5f0e1;
+        }
+        .evidence-input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .evidence-submit {
+            margin-top: 15px;
+            width: 100%;
+            padding: 10px;
+            background: #8b5a2b;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        /* 视图A B站样式 */
+        .bili-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+        .bili-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            font-family: "黑体";
+            margin-bottom: 10px;
+        }
+        .bili-subtitle {
+            font-size: 14px;
+            font-weight: bold;
+            font-family: "黑体";
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        .avatar-row {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        .avatar-item {
+            flex-shrink: 0;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+        }
+        .avatar-red-dot {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            background: red;
+            border-radius: 50%;
+            display: none;
+        }
+        .bili-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #eee;
+        }
+        .dynamic-page {
+            padding: 15px;
+        }
+        .dynamic-item {
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .dynamic-header {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .dynamic-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        .dynamic-name {
+            font-weight: bold;
+            font-size: 15px;
+        }
+        .dynamic-time {
+            font-size: 12px;
+            color: #999;
+        }
+        .dynamic-content {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .dynamic-img {
+            margin-bottom: 10px;
+        }
+        .dynamic-img img {
+            max-width: 100%;
+        }
+        .comment-section {
+            margin-top: 15px;
+        }
+        .comment-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .comment-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .comment-body {
+            flex: 1;
+        }
+        .comment-name {
+            font-size: 13px;
+            color: #6176b0;
+            margin-bottom: 3px;
+        }
+        .comment-text {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .comment-reply {
+            margin-top: 8px;
+            padding: 8px;
+            background: #f6f6f6;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .reply-item {
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+        .reply-name {
+            color: #6176b0;
+        }
+        /* 随机评论头像渐变 */
+        .avatar-1 { background: linear-gradient(45deg, #ff9a9e, #fad0c4); }
+        .avatar-2 { background: linear-gradient(45deg, #a1c4fd, #c2e9fb); }
+        .avatar-3 { background: linear-gradient(45deg, #ffecd2, #fcb69f); }
+        .avatar-4 { background: linear-gradient(45deg, #d299c2, #fef9d7); }
+        .avatar-5 { background: linear-gradient(45deg, #89f7fe, #66a6ff); }
+        .avatar-6 { background: linear-gradient(45deg, #fddb92, #d1fdff); }
+        .avatar-7 { background: linear-gradient(45deg, #fbc2eb, #a6c1ee); }
+        .avatar-8 { background: linear-gradient(45deg, #ffecd2, #fcb69f); }
+        /* 新增：玩家羊头人头像（纯CSS渐变，无需图片） */
+        .avatar-player {
+            background: linear-gradient(45deg, #8b5a2b, #d2b48c);
+        }
+        /* 视图B 微信样式 */
+        .wechat-list {
+            background: white;
+            height: 100%;
+            overflow-y: auto;
+        }
+        .chat-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            align-items: center;
+        }
+        .chat-item.top {
+            background: #f7f7f7;
+        }
+        .chat-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 6px;
+            object-fit: cover;
+        }
+        .chat-info {
+            flex: 1;
+        }
+        .chat-name {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        .chat-preview {
+            font-size: 13px;
+            color: #999;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        /* 聊天窗口 */
+        .chat-window {
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            background: #ededed;
+        }
+        .chat-window.active {
+            display: flex;
+        }
+        .chat-header {
+            padding: 12px;
+            background: #f7f7f7;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+            font-size: 16px;
+            position: relative;
+        }
+        .chat-back {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #07c160;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        .message-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+        .message-item.self {
+            flex-direction: row-reverse;
+        }
+        .msg-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        .msg-bubble {
+            max-width: 70%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: white;
+            font-size: 15px;
+            line-height: 1.5;
+            word-break: break-all;
+        }
+        .message-item.self .msg-bubble {
+            background: #95ec69;
+        }
+        .msg-time {
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            margin: 10px 0;
+        }
+        .chat-input-area {
+            padding: 10px;
+            background: #f7f7f7;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .chat-input {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 15px;
+            outline: none;
+        }
+        .send-btn {
+            padding: 8px 16px;
+            background: #07c160;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .msg-img {
+            max-width: 200px;
+            border-radius: 4px;
+        }
+        /* 追赶动画 */
+        .run-animation {
+            position: fixed;
+            bottom: 20px;
+            left: -300px;
+            width: 300px;
+            z-index: 9997;
+            animation: runRight 3s linear forwards;
+        }
+        @keyframes runRight {
+            0% { left: -300px; }
+            100% { left: 100%; }
+        }
+        /* 外部链接样式 */
+        .external-link {
+            color: #576b95;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        /* 全局禁止图片系统预览、长按菜单、拖拽 */
+img {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    user-drag: none;
+}
+/* 视图A/列表头像：图片完全不响应点击，事件由父容器接管 */
+.bili-avatar, .dynamic-avatar, .chat-avatar, .comment-avatar {
+    pointer-events: none;
+}
+/* 隐藏玩家羊头人头像 */
+.avatar-player {
+    display: none !important;
+}
+/* 群聊简笔画头像 */
+.group-avatar {
+    background: #f0f0f0;
+    position: relative;
+    border: 1px solid #999;
+}
+.group-avatar::before,
+.group-avatar::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #666;
+}
+/* 第一个小人头 */
+.group-avatar::before {
+    width: 16px;
+    height: 16px;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+/* 第二个小人头 */
+.group-avatar::after {
+    width: 12px;
+    height: 12px;
+    bottom: 8px;
+    left: 8px;
+}
+/* 第三个小人头 */
+.group-avatar > * {
+    display: none;
+}
+    </style>
+</head>
+<body>
+    <!-- 入口页面 -->
+    <div id="entry-page">
+        <h1 class="entry-title">是谁偷了巧克力</h1>
+        <div class="entry-tip-box">
+            <p class="tip-title">温馨提示：</p>
+            <p>1.你的名字叫羊头人，是这家公司的一个命苦员工，今天小犬院长的巧克力被偷了，请你帮他找出狡猾的巧克力大盗吧！</p>
+            <p>2.别忘了先看看他们的动态界面哦～点击屏幕右上角的“←”和“→”可以切换聊天界面和动态界面。</p>
+            <p>3.双击聊天界面成员头像或许会有惊喜：）</p> 
+            <p>4.“重新开始”：点击进入游戏界面，清除所有进度</p>
+            <p>“从存档处开始”：进入游戏界面，从最近的存档处开始游戏。</p>
+        </div>
+        <button class="entry-btn" onclick="restartGame()">重新开始</button>
+        <button class="entry-btn" onclick="startFromSave()">从最新存档处开始</button>
+    </div>
+    <!-- 游戏主容器 -->
+    <div id="game-container">
+        <!-- 视图切换按钮 -->
+        <div class="view-switch">
+            <button class="switch-btn" onclick="switchView('a')">←</button>
+            <button class="switch-btn" onclick="switchView('b')">→</button>
+        </div>
+        <!-- 顶部消息提示 -->
+        <div id="top-tip" onclick="handleTipClick()"></div>
+        <!-- 视图A：B站界面 -->
+        <div id="view-a" class="view">
+<div class="bili-header">
+    <div class="bili-title">关注</div>
+    <div class="bili-subtitle">最常访问</div>
+    <div class="avatar-row">
+        <div class="avatar-item" onclick="showDynamic('xiaoguanyuan')">
+            <img src="小犬院长头像（正常版）.png" class="bili-avatar" id="avatar-xiaoguanyuan">
+            <div class="avatar-red-dot" id="reddot-xiaoguanyuan"></div>
+        </div>
+        <div class="avatar-item" onclick="showDynamic('duhuanxiong')">
+            <img src="杜浣熊头像（正常版）.png" class="bili-avatar" id="avatar-duhuanxiong">
+            <div class="avatar-red-dot" id="reddot-duhuanxiong"></div>
+        </div>
+        <div class="avatar-item" onclick="showDynamic('xiaoxiang')">
+            <img src="小象想睡觉头像（正常版）.png" class="bili-avatar" id="avatar-xiaoxiang">
+            <div class="avatar-red-dot" id="reddot-xiaoxiang"></div>
+        </div>
+        <div class="avatar-item" onclick="showDynamic('songshu')">
+            <img src="松鼠斯Goh头像（正常版）.png" class="bili-avatar" id="avatar-songshu">
+            <div class="avatar-red-dot" id="reddot-songshu"></div>
+        </div>
+        <div class="avatar-item" onclick="showDynamic('shuidiyu')">
+            <img src="水滴鱼Johnson头像（正常版）.png" class="bili-avatar" id="avatar-shuidiyu">
+            <div class="avatar-red-dot" id="reddot-shuidiyu"></div>
+        </div>
+        <div class="avatar-item" onclick="showDynamic('xiaotang')">
+            <img src="小螳｀头像（正常版）.png" class="bili-avatar" id="avatar-xiaotang">
+            <div class="avatar-red-dot" id="reddot-xiaotang"></div>
+        </div>
+    </div>
+</div>
+<!-- 动态页面容器 -->
+<div id="dynamic-container">
+    <!-- 小犬院长动态 -->
+    <div id="dynamic-xiaoguanyuan" class="dynamic-page">
+        <div class="dynamic-item">
+            <div class="dynamic-header">
+                <img src="小犬院长头像（正常版）.png" class="dynamic-avatar">
+                <div>
+                    <div class="dynamic-name">小犬院长</div>
+                    <div class="dynamic-time">今日 10:00</div>
+                </div>
+            </div>
+            <div class="dynamic-content">谁？谁偷了我的巧克力？！我刚买锁在我自己的抽屉里的，昨晚9：30我下班的时候巧克力还在，今天刚进办公室盒子就空了！😡</div>
+            <div class="dynamic-img">
+                <img src="小犬院长办公桌.png">
+            </div>
+            <div class="comment-section">
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-1"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">潮越梦想一起飞</div>
+                        <div class="comment-text">狗还能吃巧克力？</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">小犬院长</span>回复<span class="reply-name">潮越梦想一起飞</span>：？？？
+                            </div>
+                            <div class="reply-item">
+                                <span class="reply-name">包上有毒不敢下包</span>回复<span class="reply-name">小犬院长</span>：捉
+                            </div>
+                            <div class="reply-item">
+                                <span class="reply-name">霹雳爆炸樟脑丸</span>回复<span class="reply-name">潮越梦想一起飞</span>：哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈
+                            </div>
+                            <div class="reply-item">
+                                <span class="reply-name">农夫yue蛇</span>回复<span class="reply-name">小犬院长</span>：我真不行了吧
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-2"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">杜浣熊</div>
+                        <div class="comment-text">不是我，我不知道办公室有巧克力。</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">皇堡特攻</span>回复<span class="reply-name">杜浣熊</span>：意思就是你如果知道的话就会偷吃吗😐
+                            </div>
+                            <div class="reply-item">
+                                <span class="reply-name">杜浣熊</span>回复<span class="reply-name">皇堡特攻</span>：ber？
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-3"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">水滴鱼Johnson</div>
+                        <div class="comment-text">不是我，我根本没碰过抽屉。</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">URBBRGROUN</span>回复<span class="reply-name">水滴鱼Johnson</span>：记者来追踪采访了哈哈哈哈哈🙂
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-4"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">松鼠斯Goh</div>
+                        <div class="comment-text">不是我，我昨晚八点就下班了。</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">小boy想睡觉Swell</span>回复<span class="reply-name">松鼠斯Goh</span>：准点下班名不虚传…
+                            </div>
+                            <div class="reply-item">
+                                <span class="reply-name">不想工作想炸地球</span>回复<span class="reply-name">松鼠斯Goh</span>：整顿职场这块👏
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-5"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">菠萝咒</div>
+                        <div class="comment-text">要不查查监控看看呢？</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">小犬院长</span>回复<span class="reply-name">菠萝咒</span>：办公室里监控前两天坏了，还没修，早知道就赶紧修了😮‍💨
+                            </div>
+                            <div class="reply-item">
+                                <span class="reply-name">菠萝咒</span>回复<span class="reply-name">小犬院长</span>：惨之……不过走廊监控应该没坏吧，感觉可以看看你下班后那段时间有谁进过你办公室？
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-6"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">前三十枪是警告</div>
+                        <div class="comment-text">该说不说的，这抽屉旁边那个黑印子是啥啊，看着怪瘆人的…</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">小犬院长</span>回复<span class="reply-name">前三十枪是警告</span>：不知道啊，我今天才发现的，闻着一股怪味。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 杜浣熊动态 -->
+    <div id="dynamic-duhuanxiong" class="dynamic-page" style="display:none;">
+        <div id="duhuanxiong-new-dynamic"></div>
+        <div class="dynamic-item">
+            <div class="dynamic-header">
+                <img src="杜浣熊头像（正常版）.png" class="dynamic-avatar">
+                <div>
+                    <div class="dynamic-name">杜浣熊</div>
+                    <div class="dynamic-time">一个月前</div>
+                </div>
+            </div>
+            <div class="dynamic-content">我最爱吃美食了。红烧排骨红烧鱼红烧羊排红烧鸡块炸串炸鸡柳炸杏鲍菇烤肠烤面筋烤五花肉清蒸鲈鱼汉堡冰淇淋生椰芒芒杨枝甘露。</div>
+            <div class="comment-section">
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-1"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">皇堡特工</div>
+                        <div class="comment-text">合着一点素的都不沾啊？？</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">小瓦园子</span>回复<span class="reply-name">皇堡特工</span>：烤面筋也算主食，生椰芒芒也算水果，荤素搭配这一块👍
+                            </div>
+                            <div class="reply-item">
+                                <span class="reply-name">杜浣熊</span>回复<span class="reply-name">小瓦园子</span>：？
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-2"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">朕何错之有啊</div>
+                        <div class="comment-text">小肚小肚，帮我推荐一家好吃的冰淇淋🤤</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">潮级牛马</span>回复<span class="reply-name">朕何错之有啊</span>：同蹲。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 小象想睡觉动态 -->
+    <div id="dynamic-xiaoxiang" class="dynamic-page" style="display:none;">
+        <div id="xiaoxiang-new-dynamic"></div>
+        <div class="dynamic-item">
+            <div class="dynamic-header">
+                <img src="小象想睡觉头像（正常版）.png" class="dynamic-avatar">
+                <div>
+                    <div class="dynamic-name">小象想睡觉</div>
+                    <div class="dynamic-time">6月2日 14:00</div>
+                </div>
+            </div>
+            <div class="dynamic-content">公司上班时间改到下午两点了，开心！</div>
+            <div class="comment-section">
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-3"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">胜者为王败者寇</div>
+                        <div class="comment-text">象哥这下子再也不用担心由于睡过头迟到了🥳</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">水滴鱼swell</span>回复<span class="reply-name">胜者为王败者寇</span>：哈哈哈哈哈哈哈哈他平时到底迟到多少次了哈哈哈哈
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-4"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">爱如火</div>
+                        <div class="comment-text">羡慕……这么好的公司我什么时候才能遇上……</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">火锅王子</span>回复<span class="reply-name">爱如火</span>：+1
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 小螳｀动态 -->
+    <div id="dynamic-xiaotang" class="dynamic-page" style="display:none;">
+        <div class="dynamic-item">
+            <div class="dynamic-header">
+                <img src="小螳｀头像（正常版）.png" class="dynamic-avatar">
+                <div>
+                    <div class="dynamic-name">小螳｀</div>
+                    <div class="dynamic-time">5月30日 11:00</div>
+                </div>
+            </div>
+            <div class="dynamic-content">公司电脑主机坏了，我刚刚修好，手和衣服都脏了，还要重新扫一遍地。</div>
+            <div class="comment-section">
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-5"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">游戏的king</div>
+                        <div class="comment-text">辛苦了！你是电脑的king！</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">小螳｀</span>回复<span class="reply-name">游戏的king</span>：谢谢！
+                            </div>
+                            <div class="reply-item">
+                                <span class="reply-name">水滴鱼会梦见电子羊吗</span>回复<span class="reply-name">游戏的king</span>：是的！
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-6"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">小狗是最好的小狗</div>
+                        <div class="comment-text">king居然还会修电脑，听起来好麻烦</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">火男大招闪队友</span>回复<span class="reply-name">小狗是最好的小狗</span>：对，我之前在家修了一次，也是修主机，一手都是机油，洗掉巨麻烦。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 松鼠斯Goh动态 -->
+    <div id="dynamic-songshu" class="dynamic-page" style="display:none;">
+        <div class="dynamic-item">
+            <div class="dynamic-header">
+                <img src="松鼠斯Goh头像（正常版）.png" class="dynamic-avatar">
+                <div>
+                    <div class="dynamic-name">松鼠斯Goh</div>
+                    <div class="dynamic-time">1月1日 00:00</div>
+                </div>
+            </div>
+            <div class="dynamic-content">元旦快乐，天天开心！</div>
+            <div class="dynamic-img">
+                <img src="烟花.png">
+            </div>
+            <div class="comment-section">
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-7"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">爱吃草莓</div>
+                        <div class="comment-text">小斯元旦快乐！也祝你天天开心！</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">松鼠家的松果</span>回复<span class="reply-name">爱吃草莓</span>：斯子好久没发动态了…我刚刚还以为是高仿号www
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-8"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">潮级拌饭</div>
+                        <div class="comment-text">小斯最近都看什么书了？有没有推荐的呀？</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">松鼠斯Goh</span>回复<span class="reply-name">潮级拌饭</span>：最近在看阿加莎，推荐从《东方快车谋杀案》开始看。
+                            </div>
+                            <div class="reply-item">
+                                <span class="reply-name">松鼠家的松果</span>回复<span class="reply-name">松鼠斯Goh</span>：斯儿最近爱看侦探小说呀？期待松鼠侦探哈哈哈
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 水滴鱼Johnson动态 -->
+    <div id="dynamic-shuidiyu" class="dynamic-page" style="display:none;">
+        <div class="dynamic-item">
+            <div class="dynamic-header">
+                <img src="水滴鱼Johnson头像（正常版）.png" class="dynamic-avatar">
+                <div>
+                    <div class="dynamic-name">水滴鱼Johnson</div>
+                    <div class="dynamic-time">6月1日 00:00</div>
+                </div>
+            </div>
+            <div class="dynamic-content">儿童节快乐！我们公司儿童节放假嘿嘿嘿</div>
+            <div class="dynamic-img">
+                <img src="表情包.png">
+            </div>
+            <div class="comment-section">
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-1"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">松鼠家的松果</div>
+                        <div class="comment-text">？</div>
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-2"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">包上有毒不敢下包</div>
+                        <div class="comment-text">？</div>
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-3"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">潮级牛马</div>
+                        <div class="comment-text">？</div>
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-4"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">生锈的浪漫主义者</div>
+                        <div class="comment-text">我跟你们拼了</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
+        <!-- 视图B：微信界面 -->
+        <div id="view-b" class="view">
+<!-- 微信聊天列表 -->
+<div id="wechat-list" class="wechat-list">
+    <div class="chat-item top" onclick="openChat('group')">
+        <div class="chat-avatar group-avatar"></div>
+        <div class="chat-info">
+            <div class="chat-name">宇宙无敌秘密组织</div>
+            <div class="chat-preview" id="preview-group">[群聊]</div>
+        </div>
+    </div>
+    <div class="chat-item top" onclick="openChat('filehelper')">
+        <img src="文件传输助手.png" class="chat-avatar">
+        <div class="chat-info">
+            <div class="chat-name">文件传输助手</div>
+            <div class="chat-preview" id="preview-filehelper">https://lqllllllllll.github.io/-/</div>
+        </div>
+    </div>
+    <div class="chat-item" onclick="openChat('xiaoguanyuan')">
+        <img src="小犬院长头像（正常版）.png" class="chat-avatar" id="list-avatar-xiaoguanyuan">
+        <div class="chat-info">
+            <div class="chat-name">小犬院长</div>
+            <div class="chat-preview" id="preview-xiaoguanyuan"></div>
+        </div>
+    </div>
+    <div class="chat-item" onclick="openChat('duhuanxiong')">
+        <img src="杜浣熊头像（正常版）.png" class="chat-avatar" id="list-avatar-duhuanxiong">
+        <div class="chat-info">
+            <div class="chat-name">杜浣熊</div>
+            <div class="chat-preview" id="preview-duhuanxiong"></div>
+        </div>
+    </div>
+    <div class="chat-item" onclick="openChat('shuidiyu')">
+        <img src="水滴鱼Johnson头像（正常版）.png" class="chat-avatar" id="list-avatar-shuidiyu">
+        <div class="chat-info">
+            <div class="chat-name">水滴鱼Johnson</div>
+            <div class="chat-preview" id="preview-shuidiyu"></div>
+        </div>
+    </div>
+    <div class="chat-item" onclick="openChat('songshu')">
+        <img src="松鼠斯Goh头像（正常版）.png" class="chat-avatar" id="list-avatar-songshu">
+        <div class="chat-info">
+            <div class="chat-name">松鼠斯Goh</div>
+            <div class="chat-preview" id="preview-songshu"></div>
+        </div>
+    </div>
+    <div class="chat-item" onclick="openChat('xiaoxiang')">
+        <img src="小象想睡觉头像（正常版）.png" class="chat-avatar" id="list-avatar-xiaoxiang">
+        <div class="chat-info">
+            <div class="chat-name">小象想睡觉</div>
+            <div class="chat-preview" id="preview-xiaoxiang"></div>
+        </div>
+    </div>
+    <div class="chat-item" onclick="openChat('xiaotang')">
+        <img src="小螳｀头像（正常版）.png" class="chat-avatar" id="list-avatar-xiaotang">
+        <div class="chat-info">
+            <div class="chat-name">小螳｀</div>
+            <div class="chat-preview" id="preview-xiaotang"></div>
+        </div>
+    </div>
+</div>
+<!-- 群聊窗口 -->
+<div id="chat-group" class="chat-window">
+    <div class="chat-header">
+        <span class="chat-back" onclick="backToList()">‹ 返回</span>
+        宇宙无敌秘密组织
+    </div>
+    <div class="chat-messages" id="messages-group"></div>
+    <div class="chat-input-area">
+        <input type="text" class="chat-input" id="input-group" placeholder="">
+        <button class="send-btn" onclick="sendMessage('group')">发送</button>
+    </div>
+</div>
+<!-- 文件传输助手窗口 -->
+<div id="chat-filehelper" class="chat-window">
+    <div class="chat-header">
+        <span class="chat-back" onclick="backToList()">‹ 返回</span>
+        文件传输助手
+    </div>
+    <div class="chat-messages" id="messages-filehelper">
+        <div class="msg-time">今天 10:05</div>
+        <div class="message-item self">
+            <div class="msg-bubble"><span class="external-link" onclick="onMonitorLinkClick()">https://lqllllllllll.github.io/-/</span>
+</div>
+        </div>
+    </div>
+    <div class="chat-input-area">
+        <input type="text" class="chat-input" id="input-filehelper" placeholder="">
+        <button class="send-btn" onclick="sendMessage('filehelper')">发送</button>
+    </div>
+</div>
+<!-- 小犬院长私聊窗口 -->
+<div id="chat-xiaoguanyuan" class="chat-window">
+    <div class="chat-header">
+        <span class="chat-back" onclick="backToList()">‹ 返回</span>
+        小犬院长
+    </div>
+    <div class="chat-messages" id="messages-xiaoguanyuan">
+        <div class="msg-time">2023年5月23日</div>
+        <div class="message-item">
+            <img src="小犬院长头像（正常版）.png" class="msg-avatar" ondblclick="showProfile('xiaoguanyuan')">
+            <div class="msg-bubble">明天有拍摄，你给相机先充好电。</div>
+        </div>
+        <div class="message-item self">
+            <div class="msg-bubble">收到</div>
+        </div>
+        <div class="msg-time">2024年2月1日</div>
+        <div class="message-item">
+            <img src="小犬院长头像（正常版）.png" class="msg-avatar" ondblclick="showProfile('xiaoguanyuan')">
+            <div class="msg-bubble">等春节后杜浣熊会找人在新公司装监控，后台系统你来协助我们负责吧，有些视频后期需要监控视角你也方便调。</div>
+        </div>
+        <div class="message-item">
+            <img src="小犬院长头像（正常版）.png" class="msg-avatar" ondblclick="showProfile('xiaoguanyuan')">
+            <div class="msg-bubble">密码就是之前老番茄来我们公司谋权篡位时候的大门密码。</div>
+        </div>
+    </div>
+    <div class="chat-input-area">
+        <input type="text" class="chat-input" id="input-xiaoguanyuan" placeholder="">
+        <button class="send-btn" onclick="sendMessage('xiaoguanyuan')">发送</button>
+    </div>
+</div>
+<!-- 杜浣熊私聊窗口 -->
+<div id="chat-duhuanxiong" class="chat-window">
+    <div class="chat-header">
+        <span class="chat-back" onclick="backToList()">‹ 返回</span>
+        杜浣熊
+    </div>
+    <div class="chat-messages" id="messages-duhuanxiong">
+        <div class="msg-time">2026年3月1日</div>
+        <div class="message-item">
+            <img src="杜浣熊头像（正常版）.png" class="msg-avatar" ondblclick="showProfile('duhuanxiong')">
+            <div class="msg-bubble">明天你们幕后组都有谁值班？</div>
+        </div>
+        <div class="message-item self">
+            <div class="msg-bubble">背包、围巾纸薄和小珂</div>
+        </div>
+    </div>
+    <div class="chat-input-area">
+        <input type="text" class="chat-input" id="input-duhuanxiong" placeholder="">
+        <button class="send-btn" onclick="sendMessage('duhuanxiong')">发送</button>
+    </div>
+</div>
+<!-- 水滴鱼Johnson私聊窗口 -->
+<div id="chat-shuidiyu" class="chat-window">
+    <div class="chat-header">
+        <span class="chat-back" onclick="backToList()">‹ 返回</span>
+        水滴鱼Johnson
+    </div>
+    <div class="chat-messages" id="messages-shuidiyu"></div>
+    <div class="chat-input-area">
+        <input type="text" class="chat-input" id="input-shuidiyu" placeholder="">
+        <button class="send-btn" onclick="sendMessage('shuidiyu')">发送</button>
+    </div>
+</div>
+<!-- 松鼠斯Goh私聊窗口 -->
+<div id="chat-songshu" class="chat-window">
+    <div class="chat-header">
+        <span class="chat-back" onclick="backToList()">‹ 返回</span>
+        松鼠斯Goh
+    </div>
+    <div class="chat-messages" id="messages-songshu"></div>
+    <div class="chat-input-area">
+        <input type="text" class="chat-input" id="input-songshu" placeholder="">
+        <button class="send-btn" onclick="sendMessage('songshu')">发送</button>
+    </div>
+</div>
+<!-- 小象想睡觉私聊窗口 -->
+<div id="chat-xiaoxiang" class="chat-window">
+    <div class="chat-header">
+        <span class="chat-back" onclick="backToList()">‹ 返回</span>
+        小象想睡觉
+    </div>
+    <div class="chat-messages" id="messages-xiaoxiang"></div>
+    <div class="chat-input-area">
+        <input type="text" class="chat-input" id="input-xiaoxiang" placeholder="">
+        <button class="send-btn" onclick="sendMessage('xiaoxiang')">发送</button>
+    </div>
+</div>
+<!-- 小螳｀私聊窗口 -->
+<div id="chat-xiaotang" class="chat-window">
+    <div class="chat-header">
+        <span class="chat-back" onclick="backToList()">‹ 返回</span>
+        小螳｀
+    </div>
+    <div class="chat-messages" id="messages-xiaotang"></div>
+    <div class="chat-input-area">
+        <input type="text" class="chat-input" id="input-xiaotang" placeholder="">
+        <button class="send-btn" onclick="sendMessage('xiaotang')">发送</button>
+    </div>
+</div>
+        </div>
+        <!-- 个人介绍弹窗 -->
+        <div id="profile-modal" class="modal profile-modal">
+            <div class="modal-content">
+                <div class="profile-name" id="profile-name"></div>
+                <div class="profile-title" id="profile-title"></div>
+                <div class="profile-info" id="profile-info"></div>
+                <span class="profile-close" onclick="closeModal('profile-modal')">×</span>
+            </div>
+        </div>
+        <!-- 选择框容器 -->
+        <div id="choice-box" class="choice-box">
+            <div id="choice-text"></div>
+            <div class="choice-btns">
+                <button class="btn-no" id="choice-no-btn">否</button>
+                <button class="btn-yes" id="choice-yes-btn">是</button>
+            </div>
+        </div>
+        <!-- 结局弹窗 -->
+        <div id="ending-modal" class="modal ending-modal">
+            <div class="modal-content">
+                <span class="ending-close" onclick="closeModal('ending-modal')">×</span>
+                <div class="ending-title" id="ending-title"></div>
+                <div class="ending-text" id="ending-text"></div>
+            </div>
+        </div>
+        <!-- 证据输入弹窗 -->
+        <div id="evidence-modal" class="modal evidence-modal">
+            <div class="modal-content">
+                <div style="text-align:center;font-size:18px;font-weight:bold;">你的证据是？</div>
+                <input type="text" class="evidence-input" id="evidence-input" placeholder="请输入你的答案">
+                <button class="evidence-submit" onclick="submitEvidence()">提交</button>
+                <div id="evidence-tip" style="color:red;text-align:center;margin-top:10px;display:none;">请重新输入！</div>
+            </div>
+        </div>
+<script>
+// ===================== 全局游戏状态 =====================
+let gameState = {
+    progress: 0,
+    currentView: 'b',
+    currentChat: null,
+    unlockedEndings: [],
+    lastSavePoint: 0,
+    avatarStatus: {
+        xiaoguanyuan: 'normal',
+        duhuanxiong: 'normal',
+        xiaoxiang: 'normal',
+        songshu: 'normal',
+        shuidiyu: 'normal',
+        xiaotang: 'normal'
+    },
+    // 剧情节点标记
+    groupTipShown: false,
+    groupChatStarted: false,
+    groupChatFinished: false,
+    deanPrivateDone: false,
+    monitorViewed: false,
+    songshuTipShown: false,
+    songshuClueDone: false,
+    duhuanxiongDynamicAdded: false,
+    duhuanxiongTipShown: false,
+    duhuanxiongStage1: false,
+    duhuanxiongStage2: false,
+    groupAskTipShown: false,
+    firstChoiceDone: false,
+    secondChoiceDone: false,
+    runAnimationPlayed: false,
+    xiaoxiangDynamicAdded: false,
+    xiaoxiangTipShown: false,
+    xiaoxiangStage1: false,
+    xiaoxiangChoiceDone: false,
+    iceCreamChoiceDone: false,
+    frameChoiceDone: false,
+    xiaoxiangStage2: false,
+    xiaoxiangStage3: false,
+    groupTruthTipShown: false,
+    shuidiyuChoiceDone: false,
+    evidenceSubmitted: false,
+    truthShown: false,
+    achievementShown: false,
+    finalTipShown: false,
+    finalChoiceDone: false
+};
+const SAVE_KEY = 'chocolate_case_save';
+const MSG_INTERVAL = 2000;
+const ENDING_FADE_TIME = 5000;
+// ===================== 存档系统 =====================
+function saveGame() {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+}
+function loadGame() {
+    const save = localStorage.getItem(SAVE_KEY);
+    if (save) {
+        gameState = JSON.parse(save);
+        return true;
+    }
+    return false;
+}
+function restartGame() {
+    localStorage.removeItem(SAVE_KEY);
+    gameState = {
+        progress: 0,
+        currentView: 'b',
+        currentChat: null,
+        unlockedEndings: [],
+        lastSavePoint: 0,
+        avatarStatus: {
+            xiaoguanyuan: 'normal',
+            duhuanxiong: 'normal',
+            xiaoxiang: 'normal',
+            songshu: 'normal',
+            shuidiyu: 'normal',
+            xiaotang: 'normal'
+        },
+        groupTipShown: false,
+        groupChatStarted: false,
+        groupChatFinished: false,
+        deanPrivateDone: false,
+        monitorViewed: false,
+        songshuTipShown: false,
+        songshuClueDone: false,
+        duhuanxiongDynamicAdded: false,
+        duhuanxiongTipShown: false,
+        duhuanxiongStage1: false,
+        duhuanxiongStage2: false,
+        groupAskTipShown: false,
+        firstChoiceDone: false,
+        secondChoiceDone: false,
+        runAnimationPlayed: false,
+        xiaoxiangDynamicAdded: false,
+        xiaoxiangTipShown: false,
+        xiaoxiangStage1: false,
+        xiaoxiangChoiceDone: false,
+        iceCreamChoiceDone: false,
+        frameChoiceDone: false,
+        xiaoxiangStage2: false,
+        xiaoxiangStage3: false,
+        groupTruthTipShown: false,
+        shuidiyuChoiceDone: false,
+        evidenceSubmitted: false,
+        truthShown: false,
+        achievementShown: false,
+        finalTipShown: false,
+        finalChoiceDone: false
+    };
+    saveGame();
+    enterGame();
+}
+function continueGame() {
+    loadGame();
+    enterGame();
+}
+function startFromSave() {
+    if (!loadGame()) {
+        alert('暂无存档，将开始新游戏');
+        restartGame();
+        return;
+    }
+    // 从最近存档点恢复剧情：仅重置当前存档点对应的选择，前置剧情保持已完成
+    const sp = gameState.lastSavePoint;
+    if (sp === 1) gameState.firstChoiceDone = false;
+    if (sp === 2) gameState.secondChoiceDone = false;
+    if (sp === 3) gameState.xiaoxiangChoiceDone = false;
+    if (sp === 4) gameState.iceCreamChoiceDone = false;
+    if (sp === 5) gameState.frameChoiceDone = false;
+    if (sp === 6) gameState.shuidiyuChoiceDone = false;
+    if (sp === 7) gameState.finalChoiceDone = false;
+    saveGame();
+    enterGame();
+}
+function enterGame() {
+    document.getElementById('entry-page').style.display = 'none';
+    document.getElementById('game-container').style.display = 'block';
+    switchView(gameState.currentView);
+    updateAllAvatars();
+    
+    // 恢复剧情状态
+    if (gameState.groupTipShown && !gameState.groupChatStarted) {
+        showTopTip('你收到了一条@所有人 的微信消息');
+    }
+    if (gameState.songshuTipShown && !gameState.songshuClueDone) {
+        showTopTip('松鼠斯Goh向你发了一条信息');
+    }
+    if (gameState.duhuanxiongTipShown && !gameState.duhuanxiongStage1) {
+        showTopTip('你可以向杜浣熊发送消息询问');
+    }
+    if (gameState.groupAskTipShown && !gameState.firstChoiceDone) {
+        showTopTip('聊天群组【宇宙无敌秘密组织】中，小犬院长@你并发送一条消息');
+    }
+    if (gameState.xiaoxiangTipShown && !gameState.xiaoxiangStage1) {
+        showTopTip('请点开和小象想睡觉的对话框，用你发现的线索询问他');
+    }
+    if (gameState.groupTruthTipShown && !gameState.shuidiyuChoiceDone) {
+        showTopTip('群组【宇宙无敌秘密组织】弹出消息');
+    }
+    if (gameState.finalTipShown && !gameState.finalChoiceDone) {
+        showTopTip('小犬院长给你发了一条消息');
+    }
+    
+    // 视图A计时
+    if (gameState.currentView === 'a' && !gameState.groupTipShown) {
+        startViewATimer();
+    }
+}
+// ===================== 头像管理 =====================
+function getAvatarSrc(role) {
+    const status = gameState.avatarStatus[role];
+    const map = {
+        xiaoguanyuan: {
+            normal: '小犬院长头像（正常版）.png',
+            angry: '小犬院长头像（愤怒版）.png'
+        },
+        duhuanxiong: {
+            normal: '杜浣熊头像（正常版）.png',
+            chocolate: '杜浣熊头像（巧克力版）.png',
+            sad: '杜浣熊头像（伤心版）.png',
+            shocked: '杜浣熊头像（震惊版）.png'
+        },
+        xiaoxiang: {
+            normal: '小象想睡觉头像（正常版）.png',
+            sad: '小象想睡觉头像（伤心版）.png'
+        },
+        songshu: {
+            normal: '松鼠斯Goh头像（正常版）.png',
+            confident: '松鼠斯头像（自信版）.png',
+            idea: '松鼠斯头像（灵机一动版）.png'
+        },
+        shuidiyu: {
+            normal: '水滴鱼Johnson头像（正常版）.png',
+            confused: '水滴鱼Johnson头像（茫然版）.png',
+            angry: '水滴鱼Johnson头像（愤怒版）.png'
+        },
+        xiaotang: {
+            normal: '小螳｀头像（正常版）.png',
+            sad: '小螳｀头像（伤心版）.png'
+        }
+    };
+    return map[role][status] || map[role].normal;
+}
+function updateAllAvatars() {
+    // 更新视图A头像
+    ['xiaoguanyuan','duhuanxiong','xiaoxiang','songshu','shuidiyu','xiaotang'].forEach(role => {
+        const el = document.getElementById('avatar-' + role);
+        if (el) el.src = getAvatarSrc(role);
+    });
+    // 更新微信列表头像
+    ['xiaoguanyuan','duhuanxiong','shuidiyu','songshu','xiaoxiang','xiaotang'].forEach(role => {
+        const el = document.getElementById('list-avatar-' + role);
+        if (el) el.src = getAvatarSrc(role);
+    });
+    saveGame();
+}
+// ===================== 视图切换 =====================
+function switchView(view) {
+    gameState.currentView = view;
+    document.getElementById('view-a').style.display = view === 'a' ? 'block' : 'none';
+    document.getElementById('view-b').style.display = view === 'b' ? 'block' : 'none';
+    
+    if (view === 'a' && !gameState.groupTipShown) {
+        startViewATimer();
+    }
+    saveGame();
+}
+let viewATimer = null;
+function startViewATimer() {
+    if (viewATimer) return;
+    viewATimer = setTimeout(() => {
+        if (!gameState.groupTipShown) {
+            gameState.groupTipShown = true;
+            showTopTip('你收到了一条@所有人 的微信消息');
+            saveGame();
+        }
+    }, 10000);
+}
+// ===================== 微信聊天 =====================
+function openChat(chatId) {
+    document.getElementById('wechat-list').style.display = 'none';
+    document.querySelectorAll('.chat-window').forEach(el => el.classList.remove('active'));
+    document.getElementById('chat-' + chatId).classList.add('active');
+    gameState.currentChat = chatId;
+    
+    // 进入群聊触发剧情
+    if (chatId === 'group' && gameState.groupTipShown && !gameState.groupChatStarted) {
+        hideTopTip();
+        startGroupChat();
+    }
+    // 进入小犬院长私聊触发剧情
+    if (chatId === 'xiaoguanyuan' && gameState.groupChatFinished && !gameState.deanPrivateDone) {
+        hideTopTip();
+        startDeanPrivateChat();
+    }
+    // 进入松鼠私聊触发剧情
+    if (chatId === 'songshu' && gameState.songshuTipShown && !gameState.songshuClueDone) {
+        hideTopTip();
+        startSongshuClue();
+    }
+    // 进入杜浣熊私聊更新输入框提示
+    if (chatId === 'duhuanxiong') {
+        updateDuhuanxiongPlaceholder();
+    }
+    // 进入小象私聊更新输入框提示
+    if (chatId === 'xiaoxiang') {
+        updateXiaoxiangPlaceholder();
+    }
+    // 进入群聊触发询问剧情
+    if (chatId === 'group' && gameState.groupAskTipShown && !gameState.firstChoiceDone) {
+        hideTopTip();
+        showFirstChoice();
+    }
+    // 进入群聊触发水滴鱼抉择
+    if (chatId === 'group' && gameState.groupTruthTipShown && !gameState.shuidiyuChoiceDone) {
+        hideTopTip();
+        showShuidiyuChoice();
+    }
+    // 进入小犬院长私聊触发最终奖励
+    if (chatId === 'xiaoguanyuan' && gameState.finalTipShown && !gameState.finalChoiceDone) {
+        hideTopTip();
+        showFinalChoice();
+    }
+    
+    saveGame();
+}
+function backToList() {
+    document.querySelectorAll('.chat-window').forEach(el => el.classList.remove('active'));
+    document.getElementById('wechat-list').style.display = 'block';
+    gameState.currentChat = null;
+    saveGame();
+}
+function appendMessage(chatId, sender, text, isSelf = false, imgSrc = null) {
+    const container = document.getElementById('messages-' + chatId);
+    if (!container) return;
+    const msgItem = document.createElement('div');
+    msgItem.className = 'message-item' + (isSelf ? ' self' : '');
+    
+    // 修正：玩家头像使用纯CSS渐变，无需图片
+    let avatar;
+    if (isSelf) {
+        avatar = document.createElement('div');
+        avatar.className = 'msg-avatar avatar-player';
+    } else {
+        // 头像外层包div，事件绑在外层，图片禁用点击杜绝系统预览
+        const avatarWrap = document.createElement('div');
+        avatarWrap.style.width = '36px';
+        avatarWrap.style.height = '36px';
+        avatarWrap.style.flexShrink = '0';
+        avatarWrap.ondblclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            showProfile(sender);
+        };
+        avatar = document.createElement('img');
+        avatar.className = 'msg-avatar';
+        avatar.src = getAvatarSrc(sender);
+        avatar.style.pointerEvents = 'none';
+        avatarWrap.appendChild(avatar);
+        avatar = avatarWrap;
+    }
+
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    if (imgSrc) {
+        const img = document.createElement('img');
+        img.src = imgSrc;
+        img.className = 'msg-img';
+        bubble.appendChild(img);
+    } else {
+        bubble.textContent = text;
+    }
+    if (isSelf) {
+        msgItem.appendChild(bubble);
+        msgItem.appendChild(avatar);
+    } else {
+        msgItem.appendChild(avatar);
+        msgItem.appendChild(bubble);
+    }
+    container.appendChild(msgItem);
+    container.scrollTop = container.scrollHeight;
+    // 更新列表预览
+    const preview = document.getElementById('preview-' + chatId);
+    if (preview && !isSelf) {
+        preview.textContent = text || '[图片]';
+    }
+}
+// ===================== 个人介绍面板 =====================
+const profileData = {
+    duhuanxiong: {
+        name: '杜浣熊',
+        title: '小犬team公司副总',
+        info: '<p>性格：贪吃，忠诚</p><p>爱好：吃，喊麦，跳社会摇，化蛋小黑超浓眼妆</p><p>特长：反射弧特长（小犬院长锐评）</p>'
+    },
+    xiaoguanyuan: {
+        name: '小犬院长',
+        title: '小犬team公司至高无上的总裁',
+        info: '<p>性格：暴躁，仗义，善良</p><p>爱好：拍视频，唱歌，扣工资，但是心情好时有概率随机发红包</p><p>特长：有钱！！！打瓦厉害！！（小犬院长强力认证）</p>'
+    },
+    xiaoxiang: {
+        name: '小象想睡觉',
+        title: '小犬team公司员工',
+        info: '<p>性格：粗心，但是脾气温和</p><p>爱好：睡觉！！做饭，吃饭，喜欢看别人吃自己做的饭并夸奖</p><p>特长：做饭！！！</p>'
+    },
+    songshu: {
+        name: '松鼠斯Goh',
+        title: '小犬team公司员工',
+        info: '<p>性格：每天下班准时，聪明，安静</p><p>爱好：桌游，玩狼人杀，下班！！！</p><p>特长：桌游</p>'
+    },
+    shuidiyu: {
+        name: '水滴鱼Johnson',
+        title: '小犬team公司员工',
+        info: '<p>性格：生锈的浪漫主义者</p><p>爱好：在别人吵架时大喊“打起来”，和直播间观众进行深夜聊天</p><p>特长：采访，当主持人</p>'
+    },
+    xiaotang: {
+        name: '小螳｀',
+        title: '小犬team公司员工',
+        info: '<p>性格：爱忘事，思维跳脱</p><p>爱好：打游戏，收集电子设备，和昆虫对话</p><p>特长：打游戏时有概率会触发“游戏的king”成就</p>'
+    }
+};
+function showProfile(uid) {
+    const data = profileData[uid];
+    if (!data) return;
+    document.getElementById('profile-name').textContent = data.name;
+    document.getElementById('profile-title').textContent = data.title;
+    document.getElementById('profile-info').innerHTML = data.info;
+    openModal('profile-modal');
+}
+// ===================== 视图A动态 =====================
+function showDynamic(uid) {
+    document.querySelectorAll('.dynamic-page').forEach(el => el.style.display = 'none');
+    document.getElementById('dynamic-' + uid).style.display = 'block';
+    // 清除小红点
+    const dot = document.getElementById('reddot-' + uid);
+    if (dot) dot.style.display = 'none';
+}
+function addDuhuanxiongNewDynamic() {
+    if (gameState.duhuanxiongDynamicAdded) return;
+    gameState.duhuanxiongDynamicAdded = true;
+    
+    const container = document.getElementById('duhuanxiong-new-dynamic');
+    container.innerHTML = `
+        <div class="dynamic-item">
+            <div class="dynamic-header">
+                <img src="${getAvatarSrc('duhuanxiong')}" class="dynamic-avatar">
+                <div>
+                    <div class="dynamic-name">杜浣熊</div>
+                    <div class="dynamic-time">今日 10:30</div>
+                </div>
+            </div>
+            <div class="dynamic-content">啊啊啊啊啊啊啊刚买的衣服就脏了！洗不掉了！</div>
+            <div class="dynamic-img">
+                <img src="杜浣熊动态照片.png">
+            </div>
+            <div class="comment-section">
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-1"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">杜浣熊是小犬院长的儿子</div>
+                        <div class="comment-text">这颜色……怎么这么像……？</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">杜浣熊</span>回复<span class="reply-name">杜浣熊是小犬院长的儿子</span>：这是冰淇淋！以后再也不敢在穿白衣服的时候吃冰淇淋了555
+                            </div>
+                            <div class="reply-item">
+                                <span class="reply-name">你有红红大嘴唇</span>回复<span class="reply-name">杜浣熊</span>：白衣服定律发力了
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-2"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">小犬院长是杜浣熊的父亲</div>
+                        <div class="comment-text">昨天小犬院长丢了巧克力，今天杜浣熊就被冰淇淋肘击，这是零食之神在劝你们健康作息不要吃零食吗。</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">红色炫酷滴眼液</span>回复<span class="reply-name">小犬院长是杜浣熊的父亲</span>：你和楼上的ID咋回事。
+                            </div>
+                            <div class="reply-item">
+                                <span class="reply-name">炫酷柠檬板凳</span>回复<span class="reply-name">红色炫酷滴眼液</span>：我也想问。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-3"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">冰冷的孤影风尘</div>
+                        <div class="comment-text">这冰淇淋颜色这么深，是巧克力的吗？该不会是从小犬院长那拿的巧克力吧？😏😏</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 显示小红点
+    document.getElementById('reddot-duhuanxiong').style.display = 'block';
+    saveGame();
+}
+function addXiaoxiangNewDynamic() {
+    if (gameState.xiaoxiangDynamicAdded) return;
+    gameState.xiaoxiangDynamicAdded = true;
+    
+    const container = document.getElementById('xiaoxiang-new-dynamic');
+    container.innerHTML = `
+        <div class="dynamic-item">
+            <div class="dynamic-header">
+                <img src="${getAvatarSrc('xiaoxiang')}" class="dynamic-avatar">
+                <div>
+                    <div class="dynamic-name">小象想睡觉</div>
+                    <div class="dynamic-time">今日 09:30</div>
+                </div>
+            </div>
+            <div class="dynamic-content">拍视频的食材已经备好，准备开工，期待一下！</div>
+            <div class="dynamic-img">
+                <img src="小象动态食材.png">
+            </div>
+            <div class="comment-section">
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-4"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">小粽不想睡觉</div>
+                        <div class="comment-text">期待新视频！下期就发这个吗？</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">押韵的火锅王子</span>回复<span class="reply-name">小粽不想睡觉</span>：象哥今天居然不迟到了，来这么早？以前都下午才发动态。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="comment-avatar avatar-5"></div>
+                    <div class="comment-body">
+                        <div class="comment-name">迈呀迈呀</div>
+                        <div class="comment-text">夏天超级适合吃冰淇淋，我最爱吃巧克力味了！我们家这边天天35℃朝上，出门感觉自己要被烤熟了。</div>
+                        <div class="comment-reply">
+                            <div class="reply-item">
+                                <span class="reply-name">team的牙线</span>回复<span class="reply-name">迈呀迈呀</span>：巧克力看起来好吃，不过好像有点碎了。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('reddot-xiaoxiang').style.display = 'block';
+    saveGame();
+}
+// ===================== 顶部提示 =====================
+let currentTipAction = null;
+function showTopTip(text, action = null) {
+    const tip = document.getElementById('top-tip');
+    tip.textContent = text;
+    tip.style.display = 'block';
+    currentTipAction = action;
+}
+function hideTopTip() {
+    document.getElementById('top-tip').style.display = 'none';
+    currentTipAction = null;
+}
+function handleTipClick() {
+    if (currentTipAction) {
+        currentTipAction();
+    } else {
+        // 默认跳转逻辑
+        if (gameState.groupTipShown && !gameState.groupChatStarted) {
+            switchView('b');
+            openChat('group');
+        } else if (gameState.songshuTipShown && !gameState.songshuClueDone) {
+            switchView('b');
+            openChat('songshu');
+        } else if (gameState.duhuanxiongTipShown && !gameState.duhuanxiongStage1) {
+            switchView('b');
+            openChat('duhuanxiong');
+        } else if (gameState.groupAskTipShown && !gameState.firstChoiceDone) {
+            switchView('b');
+            openChat('group');
+        } else if (gameState.xiaoxiangTipShown && !gameState.xiaoxiangStage1) {
+            switchView('b');
+            openChat('xiaoxiang');
+        } else if (gameState.groupTruthTipShown && !gameState.shuidiyuChoiceDone) {
+            switchView('b');
+            openChat('group');
+        } else if (gameState.finalTipShown && !gameState.finalChoiceDone) {
+            switchView('b');
+            openChat('xiaoguanyuan');
+        }
+    }
+    hideTopTip();
+}
+// ===================== 弹窗通用 =====================
+function openModal(id) {
+    const modal = document.getElementById(id);
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        modal.querySelector('.modal-content').classList.add('show');
+    }, 10);
+}
+function closeModal(id) {
+    const modal = document.getElementById(id);
+    modal.querySelector('.modal-content').classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
+}
+// ===================== 选择框 =====================
+function showChoice(text, yesText, noText, yesCallback, noCallback) {
+    document.getElementById('choice-text').textContent = text;
+    document.getElementById('choice-yes-btn').textContent = yesText;
+    document.getElementById('choice-no-btn').textContent = noText;
+    document.getElementById('choice-box').style.display = 'block';
+    document.getElementById('choice-yes-btn').onclick = () => {
+        document.getElementById('choice-box').style.display = 'none';
+        setTimeout(() => {
+            if (yesCallback) yesCallback();
+        }, MSG_INTERVAL);
+    };
+    document.getElementById('choice-no-btn').onclick = () => {
+        document.getElementById('choice-box').style.display = 'none';
+        setTimeout(() => {
+            if (noCallback) noCallback();
+        }, MSG_INTERVAL);
+    };
+}
+// ===================== 结局弹窗 =====================
+const endings = {
+    ending1: {
+        title: '触发结局1【愤怒的老板】',
+        text: ['追查不到巧克力大盗，小犬院长很愤怒，他虽然并没有责怪任何人，但你依旧悄悄关注着这件事，不断思考着答案。']
+    },
+    ending2: {
+        title: '触发结局2【伤心的杜浣熊】',
+        text: [
+            '你确认了杜浣熊就是偷吃巧克力的动物。',
+            '虽然杜浣熊喊冤，但证据面前，他百口莫辩，被冲进他的办公室【浣熊堡】的小犬院长正义制裁。',
+            '小犬院长对你的能力表示赞赏，并罚杜浣熊一个月不许吃零食，杜浣熊屡次想偷偷买一点饮料，计划却次次在小犬院长的眼神下以失败告终。',
+            '这件事的风波过去了，你的生活依旧平静，只是偶尔工作的时候，会发现杜浣熊在阴暗的角落恼火地悄悄瞪着你。'
+        ]
+    },
+    ending3: {
+        title: '结局3【水滴鱼有话要说】',
+        text: [
+            '在冰淇淋的香气中，你答应了这个建议。',
+            '你将自己的猜测汇报给了小犬院长后，水滴鱼被叫到办公室。',
+            '而水滴鱼绝非等闲之辈，他反手将小象想睡觉给你带冰淇淋的事情报告给了小犬院长，言辞激昂，控诉你是因为吃了冰淇淋才偏袒小象。',
+            '你和小象想睡觉被狠狠批评了一顿，场面一度变得十分尴尬。',
+            '不过，水滴鱼也对冰淇淋产生了好奇，刚出办公室的门，就好说歹说想让小象也给他一些冰淇淋，作为“补偿”他的精神损失费。'
+        ]
+    },
+    ending4: {
+        title: '结局4【小象与水滴鱼的恩怨】',
+        text: [
+            '你并没有答应小象想睡觉。',
+            '虽然冰淇淋真的很好吃，但是你依旧留了个心眼，开始观察小象的行踪。',
+            '你注意到，在小犬院长上班时，他偷偷进了一次老板办公室，很快，水滴鱼也被叫了进去。',
+            '你不知道发生了什么，但是在他们出来后，小象想睡觉赔了水滴鱼很多冰淇淋。'
+        ]
+    },
+    ending5: {
+        title: '结局5【生锈的水滴鱼】',
+        text: [
+            '你依旧认为水滴鱼是高智商的巧克力大盗，是他偷了巧克力，又在人群之中浑水摸鱼。',
+            '你认为，他做的一切都逃不过你的法眼。',
+            '那么，水滴鱼的辩白，到底有没有道理呢？',
+            '比这个问题更重要的，是你要担心接下来几天，来自愤怒的水滴鱼的“追杀”。'
+        ]
+    },
+    easterEgg: {
+        title: '彩蛋【羊头人的心机】',
+        text: [
+            '你接过了冰淇淋。',
+            '小象前脚刚走，你后脚就把冰淇淋放到了小犬院长办公桌上。',
+            '小犬院长应该最熟悉，自己爱吃的巧克力是什么口味吧。',
+            '小象的冰淇淋和丢失的巧克力有没有关联，相信他会做出正确的判断。',
+            '当然，这件事先不要让小象知道^^'
+        ]
+    },
+    truth: {
+        title: '真相，只有一个',
+        text: [
+            '你的推理是正确的，小螳｀才是这个巧克力大盗。',
+            '在昨晚，他去小犬院长的办公室借用修电脑的工具。',
+            '翻开抽屉时，他看到了巧克力的盒子。他本想打开看看，谁知一个手滑，将盒子摔到了地上，原本完好的巧克力也全部碎掉了。',
+            '小螳｀慌极了，他手忙脚乱收拾残局，手上的机油蹭到了桌子上，也没注意。',
+            '面对碎掉的巧克力，他灵机一动，想出来一个方法：',
+            '把这些巧克力拿走，然后在网上买一盒同款，趁着第二天小犬院长还没到办公室，偷偷把新的巧克力放到他的抽屉里，这样就不会有人发现了！',
+            '于是，他把原本的巧克力悄悄放到厨房案板旁，想着小象肯定会把这些巧克力做成美食。',
+            '至于为什么小犬院长还是发现了巧克力丢了？',
+            '因为小螳｀把新买巧克力的事情忘了。'
+        ]
+    },
+    achievement: {
+        title: '恭喜你解锁成就：',
+        text: ['侦探羊头人！']
+    },
+    finalGood: {
+        title: '最终结局【优秀员工】',
+        text: [
+            '你得到了老板的认可，有了一笔丰厚的奖金，准备假期时带着小羊头人去旅游。',
+            '同事们也纷纷佩服你的能力，对你赞不绝口，连小螳｀都夸你厉害。',
+            '推理一个都没对的松鼠斯连夜向你虚心求教，问你能不能教他几招推理方法。',
+            '今天过去，公司依旧吵吵闹闹，其乐融融，准备着下一个视频的素材。',
+            '【END】'
+        ]
+    },
+    finalSecret: {
+        title: '恭喜你发现结局的另一面',
+        text: [
+            '小螳｀确实忘掉了些什么。',
+            '不过，他忘记的并不是买一盒巧克力，而是忘记了自己已经买过巧克力了。',
+            '实际上，他起了个大早，把巧克力塞进了办公室的抽屉里，但是因为太困了，所以他回到工位又睡了一会，直到小犬院长在群里问：',
+            '“谁偷了我的巧克力？”',
+            '理所当然的，小螳｀也就以为自己买巧克力的记忆是在做梦。',
+            '小犬院长看到了巧克力，但是，他很快就发现了细微的差别：',
+            '自己原本的巧克力是掰开了一小块吃掉之后，又重新封上盒子的。',
+            '但是这盒巧克力完全未拆封。',
+            '小螳｀由于摔碎了巧克力，加上心慌意乱，并没有注意到原本巧克力的问题。',
+            '而小犬院长在发现后，脑子里萌生了一个绝佳的整蛊计划。',
+            '这一定是个有趣的整蛊。',
+            '【END…这回是真的！】'
+        ]
+    }
+};
+function showEnding(endingId, closeCallback = null) {
+    const ending = endings[endingId];
+    if (!ending) return;
+    document.getElementById('ending-title').textContent = ending.title;
+    const textContainer = document.getElementById('ending-text');
+    textContainer.innerHTML = '';
+    openModal('ending-modal');
+    // 淡入弹窗
+    const modal = document.getElementById('ending-modal');
+    modal.querySelector('.modal-content').style.opacity = '0';
+    setTimeout(() => {
+        modal.querySelector('.modal-content').style.opacity = '1';
+    }, 10);
+    // 逐行浮现文字
+    ending.text.forEach((line, index) => {
+        const p = document.createElement('p');
+        p.textContent = line;
+        textContainer.appendChild(p);
+        setTimeout(() => {
+            p.classList.add('show');
+        }, 1000 + index * 1000);
+    });
+    // 关闭回调
+    const closeBtn = modal.querySelector('.ending-close');
+    closeBtn.onclick = () => {
+        closeModal('ending-modal');
+        if (closeCallback) closeCallback();
+    };
+    if (!gameState.unlockedEndings.includes(endingId)) {
+        gameState.unlockedEndings.push(endingId);
+        saveGame();
+    }
+}
+// ===================== 证据输入 =====================
+function submitEvidence() {
+    const input = document.getElementById('evidence-input').value.trim();
+    const tip = document.getElementById('evidence-tip');
+    
+    if (input.includes('黑色污渍') || input.includes('黑色') || input.includes('污渍')) {
+        closeModal('evidence-modal');
+        gameState.evidenceSubmitted = true;
+        saveGame();
+        setTimeout(() => {
+            continueTruthLine();
+        }, MSG_INTERVAL);
+    } else {
+        tip.style.display = 'block';
+        setTimeout(() => {
+            tip.style.display = 'none';
+        }, 1500);
+    }
+}
+// ===================== 剧情阶段1：初始群聊 =====================
+function startGroupChat() {
+    gameState.groupChatStarted = true;
+    saveGame();
+    const messages = [
+        { sender: 'xiaoguanyuan', text: '@所有人 谁偷了我的巧克力，最好赶紧承认，要不然，我绝对饶不了他' },
+        { sender: 'xiaoxiang', text: '肯定不可能是我，我哪敢偷东西啊。' },
+        { sender: 'xiaoguanyuan', text: '回复这么快，你是不是心虚了？@小象想睡觉' },
+        { sender: 'xiaoxiang', text: '？' },
+        { sender: 'songshu', text: '你看你这说话就没逻辑了，你怎么让人相信不是你干的？不得拿出点凭据吗？像我就很有自信，昨晚八点我就下班了，那会巧克力还没丢失，我可是绝对没有作案时间的。@小象想睡觉' },
+        { sender: 'xiaoguanyuan', text: '你天天下班这么早工作做完了吗？@松鼠斯Goh' },
+        { sender: 'duhuanxiong', text: '你吃枪药了今天？@小犬院长' },
+        { sender: 'shuidiyu', text: '昨天除了斯子我们其他人好像都在公司加班吧，我反正是剪商单到快十一点就回去了，在工位也没怎么动弹过。' },
+        { sender: 'xiaotang', text: '发生什么了？大家都在说什么呀？' },
+        { sender: 'xiaoguanyuan', text: '？顶嘴是吧，你死定了@杜浣熊 。', changeAvatar: 'angry' },
+        { sender: 'xiaoguanyuan', text: '羊头人，从现在起你来查这件事，偷我巧克力的，再不自首等最后查出来你就完蛋了。@羊头人（我）' }
+    ];
+    messages.forEach((msg, index) => {
+        setTimeout(() => {
+            if (msg.changeAvatar) {
+                gameState.avatarStatus.xiaoguanyuan = msg.changeAvatar;
+                updateAllAvatars();
+            }
+            appendMessage('group', msg.sender, msg.text);
+        }, index * MSG_INTERVAL);
+    });
+    setTimeout(() => {
+        gameState.groupChatFinished = true;
+        gameState.avatarStatus.xiaoguanyuan = 'normal';
+        updateAllAvatars();
+        showTopTip('小犬院长发来消息');
+        saveGame();
+    }, messages.length * MSG_INTERVAL);
+}
+// ===================== 剧情阶段2：小犬院长私聊 =====================
+function startDeanPrivateChat() {
+    gameState.deanPrivateDone = true;
+    saveGame();
+    const messages = [
+        '羊头人，巧克力失窃案就交给你来处理了。',
+        '这个案件性质非常非常超级无敌爆炸严重，一定要找出真凶！',
+        '你有我们公司监控系统权限，我今天有点事要忙，你先查查监控看看是什么情况。'
+    ];
+    messages.forEach((text, index) => {
+        setTimeout(() => {
+            appendMessage('xiaoguanyuan', 'xiaoguanyuan', text);
+        }, index * MSG_INTERVAL);
+    });
+}
+// 监控页面点击计时
+function onMonitorClick() {
+    if (gameState.monitorViewed) return;
+    gameState.monitorViewed = true;
+    saveGame();
+    
+    setTimeout(() => {
+        if (!gameState.songshuTipShown) {
+            gameState.songshuTipShown = true;
+            showTopTip('松鼠斯Goh向你发了一条信息');
+            saveGame();
+        }
+    }, 5000);
+}
+// ===================== 剧情阶段3：松鼠斯Goh线索 =====================
+function startSongshuClue() {
+    gameState.songshuClueDone = true;
+    saveGame();
+    const messages = [
+        '羊哥，你查得如何？',
+        '我有重大线索要分享给你！',
+        '我觉得我简直就是神探来的'
+    ];
+    messages.forEach((text, index) => {
+        setTimeout(() => {
+            appendMessage('songshu', 'songshu', text);
+        }, index * MSG_INTERVAL);
+    });
+    setTimeout(() => {
+        document.getElementById('input-songshu').placeholder = '回复任意内容都可以，如“？”';
+    }, messages.length * MSG_INTERVAL);
+}
+function onSongshuReply() {
+    gameState.avatarStatus.songshu = 'confident';
+    updateAllAvatars();
+    const messages = [
+        '我发现杜浣熊有重大作案嫌疑😏',
+        '他经常去找小犬院长汇报工作，小犬院长买巧克力的事情他是最有可能知道的，我们其他人都不知道',
+        '杜浣熊最爱吃巧克力了，他有充分的作案动机',
+        '而且他之前还有“前科”，偷吃过小犬院长的烤肠，被当场抓包',
+        '最最重要的是，今天我看见杜浣熊神色可疑地去卫生间换了一身新的工作服，问他的时候，他说原来的工作服脏了。',
+        '这有没有可能，就是巧克力粘在衣服上的污渍？',
+        '我猜哦，不是杜浣熊就是小象想睡觉，小象是厨子哎，你知道的，他也爱吃巧克力。'
+    ];
+    messages.forEach((text, index) => {
+        setTimeout(() => {
+            appendMessage('songshu', 'songshu', text);
+        }, index * MSG_INTERVAL);
+    });
+    setTimeout(() => {
+        addDuhuanxiongNewDynamic();
+        gameState.duhuanxiongTipShown = true;
+        showTopTip('杜浣熊新发布一条D站动态');
+        saveGame();
+    }, messages.length * MSG_INTERVAL);
+}
+// ===================== 剧情阶段4：杜浣熊审问 =====================
+function updateDuhuanxiongPlaceholder() {
+    const input = document.getElementById('input-duhuanxiong');
+    if (!gameState.duhuanxiongStage1) {
+        input.placeholder = '问他昨天在小犬院长的办公室干什么了';
+    } else if (!gameState.duhuanxiongStage2) {
+        input.placeholder = '观察他的头像，将发现的线索输入并发送';
+    } else {
+        input.placeholder = '';
+    }
+}
+function onDuhuanxiongSend(text) {
+    if (!gameState.duhuanxiongStage1) {
+        if (text.includes('办公室')) {
+            gameState.duhuanxiongStage1 = true;
+            gameState.avatarStatus.duhuanxiong = 'chocolate';
+            updateAllAvatars();
+            setTimeout(() => {
+                appendMessage('duhuanxiong', 'duhuanxiong', '我就是去拿了资料，别的啥都没干啊');
+                updateDuhuanxiongPlaceholder();
+                saveGame();
+            }, MSG_INTERVAL);
+        } else {
+            setTimeout(() => {
+                appendMessage('duhuanxiong', 'duhuanxiong', '你好呀，我是霸道副总杜浣熊～');
+            }, MSG_INTERVAL);
+        }
+    } else if (!gameState.duhuanxiongStage2) {
+        if (text.includes('嘴上') || text.includes('脸上')) {
+            gameState.duhuanxiongStage2 = true;
+            gameState.avatarStatus.duhuanxiong = 'shocked';
+            updateAllAvatars();
+            setTimeout(() => {
+                appendMessage('duhuanxiong', 'duhuanxiong', '我，我脸上根本什么都没有啊！');
+                saveGame();
+                // 触发群聊询问
+                setTimeout(() => {
+                    gameState.groupAskTipShown = true;
+                    showTopTip('聊天群组【宇宙无敌秘密组织】中，小犬院长@你并发送一条消息');
+                    saveGame();
+                }, MSG_INTERVAL);
+            }, MSG_INTERVAL);
+        } else {
+            setTimeout(() => {
+                appendMessage('duhuanxiong', 'duhuanxiong', '你好呀，我是霸道副总杜浣熊～');
+            }, MSG_INTERVAL);
+        }
+    }
+}
+// ===================== 第一次抉择（存档点1） =====================
+function showFirstChoice() {
+    gameState.lastSavePoint = 1;
+    saveGame();
+    
+    // 先发送小犬院长的提问
+    appendMessage('group', 'xiaoguanyuan', '@羊头人，你查得怎么样了？');
+    
+    showChoice(
+        '是否将你发现的信息告知小犬院长？',
+        '是',
+        '否',
+        () => {
+            // 选择是
+            gameState.firstChoiceDone = true;
+            saveGame();
+            appendMessage('group', 'player', '我查到的信息：\n1.杜浣熊在昨天21：30后曾进入小犬院长办公室，在里面待了较长时间后才出来。同时，小象、水滴鱼和小螳也曾进入过办公室。\n2.杜浣熊的衣服有深色痕迹，嘴角也有零食的深色痕迹，但他不愿承认。', true);
+            setTimeout(() => {
+                showSecondChoiceGroupMessages();
+            }, MSG_INTERVAL);
+        },
+        () => {
+            // 选择否
+            gameState.firstChoiceDone = true;
+            saveGame();
+            appendMessage('group', 'player', '对不起，我现在暂时还没查出什么有用的东西。', true);
+            setTimeout(() => {
+                showEnding('ending1', () => {
+                    // 关闭结局后重新显示选择
+                    gameState.firstChoiceDone = false;
+                    saveGame();
+                    showFirstChoice();
+                });
+            }, MSG_INTERVAL);
+        }
+    );
+}
+// 选择是后的群聊消息
+function showSecondChoiceGroupMessages() {
+    gameState.avatarStatus.xiaoguanyuan = 'angry';
+    updateAllAvatars();
+    const messages = [
+        { sender: 'xiaoxiang', text: '哇🙀这怎么看都是杜浣熊偷吃了巧克力吧！' },
+        { sender: 'shuidiyu', text: '惊！巧克力失窃案疑似找到真凶，前方记者现在为您播报，零食大盗这回能得到制裁吗？广告过后敬请期待。' },
+        { sender: 'xiaotang', text: '居然可以这样的吗？' },
+        { sender: 'songshu', text: '我就说@羊头人 ，看来我的猜测没错！' },
+        { sender: 'xiaoguanyuan', text: '@杜浣熊 你还有什么话说。' },
+        { sender: 'duhuanxiong', text: '不不不不不不不是我啊！我昨天确实去了办公室，但是我是去按你的要求拿文件去盖章的啊！我真的拿完文件就走了，没偷吃哇！', changeAvatar: 'sad' }
+    ];
+    messages.forEach((msg, index) => {
+        setTimeout(() => {
+            if (msg.changeAvatar) {
+                gameState.avatarStatus.duhuanxiong = msg.changeAvatar;
+                updateAllAvatars();
+            }
+            appendMessage('group', msg.sender, msg.text);
+        }, index * MSG_INTERVAL);
+    });
+    setTimeout(() => {
+        showSecondChoice();
+    }, messages.length * MSG_INTERVAL);
+}
+// ===================== 第二次抉择（存档点2） =====================
+function showSecondChoice() {
+    gameState.lastSavePoint = 2;
+    saveGame();
+    showChoice(
+        '你认为杜浣熊是零食大盗吗？',
+        '是',
+        '否',
+        () => {
+            // 选择是 结局2
+            gameState.secondChoiceDone = true;
+            saveGame();
+            showEnding('ending2');
+        },
+        () => {
+            // 选择否 继续剧情
+            gameState.secondChoiceDone = true;
+            saveGame();
+            continueAfterSecondChoiceNo();
+        }
+    );
+}
+function continueAfterSecondChoiceNo() {
+    gameState.avatarStatus.duhuanxiong = 'shocked';
+    gameState.avatarStatus.xiaoguanyuan = 'angry';
+    updateAllAvatars();
+    const messages = [
+        { sender: 'duhuanxiong', text: '我看小象做的巧克力冰淇淋太香了，我就偷偷吃了一点点🥺就一点点……结果不小心沾到衣服上了' },
+        { sender: 'xiaoguanyuan', text: '@杜浣熊 你真没偷吃别的东西？' },
+        { sender: 'duhuanxiong', text: '没有哇没有哇，我就吃了点你在桌上放的那包薯片，别的真的碰都没碰过……' },
+        { sender: 'duhuanxiong', text: '呃' },
+        { sender: 'duhuanxiong', text: '我什么都没说。' }
+    ];
+    messages.forEach((msg, index) => {
+        setTimeout(() => {
+            appendMessage('group', msg.sender, msg.text);
+        }, index * MSG_INTERVAL);
+    });
+    setTimeout(() => {
+        appendMessage('group', 'xiaoguanyuan', '我就说我桌上薯片怎么少了那么多@杜浣熊 ');
+        setTimeout(() => {
+            appendMessage('group', 'xiaoguanyuan', '你等着吧。');
+            // 播放追赶动画
+            playRunAnimation();
+        }, MSG_INTERVAL);
+    }, messages.length * MSG_INTERVAL);
+}
+function playRunAnimation() {
+    if (gameState.runAnimationPlayed) return;
+    gameState.runAnimationPlayed = true;
+    saveGame();
+    const img = document.createElement('img');
+    img.src = '小犬院长追赶杜浣熊.png';
+    img.className = 'run-animation';
+    document.body.appendChild(img);
+    setTimeout(() => {
+        img.remove();
+        // 动画结束后继续群聊
+        continueGroupAfterAnimation();
+    }, 3000);
+}
+function continueGroupAfterAnimation() {
+    gameState.avatarStatus.duhuanxiong = 'normal';
+    gameState.avatarStatus.xiaoguanyuan = 'normal';
+    updateAllAvatars();
+    const messages = [
+        { sender: 'xiaotang', text: '小象做的巧克力冰淇淋？他昨天下午刚跟我说想做草莓味的，但是没买到好的草莓，还在犹豫要不要换口味呢。' },
+        { sender: 'shuidiyu', text: '我早上看见那些巧克力了，就在厨房那里，我还拿了一点吃。' },
+        { sender: 'xiaoxiang', text: '？' },
+        { sender: 'duhuanxiong', text: '还挺好吃的，第一次吃有点苦的巧克力味冰淇淋。' },
+        { sender: 'xiaoguanyuan', text: '我买的巧克力就是苦的黑巧。' },
+        { sender: 'xiaotang', text: '这么巧的吗？' }
+    ];
+    messages.forEach((msg, index) => {
+        setTimeout(() => {
+            appendMessage('group', msg.sender, msg.text);
+        }, index * MSG_INTERVAL);
+    });
+    setTimeout(() => {
+        addXiaoxiangNewDynamic();
+        gameState.xiaoxiangTipShown = true;
+        showTopTip('小象想睡觉新发布一条D站动态');
+        // 点击提示跳转到视图A
+        currentTipAction = () => {
+            switchView('a');
+            showDynamic('xiaoxiang');
+            // 5秒后弹出私聊提示
+            setTimeout(() => {
+                gameState.xiaoxiangTipShown = true;
+                showTopTip('请点开和小象想睡觉的对话框，用你发现的线索询问他');
+                saveGame();
+            }, 5000);
+        };
+        saveGame();
+    }, messages.length * MSG_INTERVAL);
+}
+// ===================== 小象审问支线 =====================
+function updateXiaoxiangPlaceholder() {
+    const input = document.getElementById('input-xiaoxiang');
+    if (!gameState.xiaoxiangStage1) {
+        input.placeholder = '输入关于巧克力的问题询问他';
+    } else if (!gameState.xiaoxiangStage2) {
+        input.placeholder = '看看小象的动态，将你发现的线索告知小象';
+    } else if (!gameState.xiaoxiangStage3) {
+        input.placeholder = '你觉得巧克力有什么异常？可以告诉小象';
+    } else {
+        input.placeholder = '';
+    }
+}
+function onXiaoxiangSend(text) {
+    if (!gameState.xiaoxiangStage1) {
+        if (text.includes('巧克力')) {
+            gameState.xiaoxiangStage1 = true;
+            saveGame();
+            setTimeout(() => {
+                appendMessage('xiaoxiang', 'xiaoxiang', '真的不是我！我自己买巧克力做的冰淇淋啊！');
+                showXiaoxiangFirstChoice();
+            }, MSG_INTERVAL);
+        } else {
+            setTimeout(() => {
+                appendMessage('xiaoxiang', 'xiaoxiang', '美食区找我小象，啥我都给它干爆！');
+            }, MSG_INTERVAL);
+        }
+    } else if (!gameState.xiaoxiangStage2) {
+        if (text.includes('早') || text.includes('九点半') || text.includes('9：30') || text.includes('昨晚') || text.includes('办公室')) {
+            gameState.xiaoxiangStage2 = true;
+            saveGame();
+            setTimeout(() => {
+                const msgs = [
+                    '我……唉，没想到被你发现了QAQ',
+                    '我实话实说，其实我确实想去老板办公室拿一个东西，但是不是巧克力',
+                    '昨天晚上我去老板办公室，是为了拿记迟到的表…',
+                    '我昨天迟到了，浣熊把我的名字记上去了，我知道那个表在老板办公室，但是犬哥昨天忙一直没看，我就想能不能偷偷把上面我的名字划掉',
+                    '但是我昨天晚上怎么找都没找到，所以我才想今天早点来公司，结果刚来就发现小螳和水滴鱼一直盯着我。'
+                ];
+                msgs.forEach((t, i) => {
+                    setTimeout(() => appendMessage('xiaoxiang', 'xiaoxiang', t), i * MSG_INTERVAL);
+                });
+                setTimeout(() => {
+                    updateXiaoxiangPlaceholder();
+                }, msgs.length * MSG_INTERVAL);
+            }, MSG_INTERVAL);
+        } else {
+            setTimeout(() => {
+                appendMessage('xiaoxiang', 'xiaoxiang', '再仔细看看动态哦～');
+            }, MSG_INTERVAL);
+        }
+    } else if (!gameState.xiaoxiangStage3) {
+        if (text.includes('碎')) {
+            gameState.xiaoxiangStage3 = true;
+            saveGame();
+            setTimeout(() => {
+                const msgs = [
+                    '我不知道啊，我看见的时候巧克力就是碎的，也没有外包装。',
+                    '但是厨房的监控前几天坏了，厨房来来回回的人挺多的，不过我隐约记得巧克力上面有一个印子，我找找照片。'
+                ];
+                msgs.forEach((t, i) => {
+                    setTimeout(() => appendMessage('xiaoxiang', 'xiaoxiang', t), i * MSG_INTERVAL);
+                });
+                setTimeout(() => {
+                    appendMessage('xiaoxiang', 'xiaoxiang', null, false, '巧克力印记.png');
+                    setTimeout(() => {
+                        appendMessage('xiaoxiang', 'xiaoxiang', '这个手印我感觉像水滴鱼Johnson的');
+                        // 触发群聊剧情
+                        setTimeout(() => {
+                            gameState.groupTruthTipShown = true;
+                            showTopTip('群组【宇宙无敌秘密组织】弹出消息');
+                            saveGame();
+                        }, MSG_INTERVAL);
+                    }, MSG_INTERVAL);
+                }, msgs.length * MSG_INTERVAL);
+            }, MSG_INTERVAL);
+        } else {
+            setTimeout(() => {
+                appendMessage('xiaoxiang', 'xiaoxiang', '再仔细看看动态哦～');
+            }, MSG_INTERVAL);
+        }
+    }
+}
+// ===================== 小象第一次抉择（存档点3） =====================
+function showXiaoxiangFirstChoice() {
+    gameState.lastSavePoint = 3;
+    saveGame();
+    showChoice(
+        '你会如何回复？',
+        '那你给我看一下你的巧克力购买记录吧。',
+        '我相信你！都家人！',
+        () => {
+            // 选项1 要购买记录
+            gameState.xiaoxiangChoiceDone = true;
+            gameState.avatarStatus.xiaoxiang = 'sad';
+            updateAllAvatars();
+            saveGame();
+            
+            appendMessage('xiaoxiang', 'player', '那你给我看一下你的巧克力购买记录吧。', true);
+            setTimeout(() => {
+                const msgs = [
+                    '额……我……',
+                    '我错了羊哥，我实话告诉你吧，能不能不要告诉别人',
+                    '其实做冰淇淋的巧克力确实不是我买的，但是我没偷，我真的没偷，是我到厨房的时候，就看到有一堆巧克力摆在桌上了！',
+                    '真的不是我拿的，是有人放在厨房了！你相信我QAQ'
+                ];
+                msgs.forEach((t, i) => {
+                    setTimeout(() => appendMessage('xiaoxiang', 'xiaoxiang', t), i * MSG_INTERVAL);
+                });
+                setTimeout(() => {
+                    updateXiaoxiangPlaceholder();
+                }, msgs.length * MSG_INTERVAL);
+            }, MSG_INTERVAL);
+        },
+        () => {
+            // 选项2 相信对方
+            gameState.xiaoxiangChoiceDone = true;
+            saveGame();
+            
+            appendMessage('xiaoxiang', 'player', '我相信你！都家人！', true);
+            setTimeout(() => {
+                appendMessage('xiaoxiang', 'xiaoxiang', '没错没错，都家人！你要吃冰淇淋吗，我给你舀一碗大的！');
+                setTimeout(() => {
+                    showIceCreamChoice();
+                }, MSG_INTERVAL);
+            }, MSG_INTERVAL);
+        }
+    );
+}
+// ===================== 冰淇淋支线（存档点4） =====================
+function showIceCreamChoice() {
+    gameState.lastSavePoint = 4;
+    saveGame();
+
+    // 打开结局弹窗，先显示支线标题和第一段正文
+    openModal('ending-modal');
+    document.getElementById('ending-title').textContent = '支线【冰淇淋的力量】';
+    const textContainer = document.getElementById('ending-text');
+    textContainer.innerHTML = '';
+
+    // 弹窗淡入效果
+    const modal = document.getElementById('ending-modal');
+    modal.querySelector('.modal-content').style.opacity = '0';
+    setTimeout(() => {
+        modal.querySelector('.modal-content').style.opacity = '1';
+    }, 10);
+
+    // 浮现第一段正文
+    const p1 = document.createElement('p');
+    p1.textContent = '小象想睡觉的冰淇淋确实很好吃，巧克力的苦味和牛奶的香味完美融合，炎炎夏日来上一口，实在令人满足。';
+    textContainer.appendChild(p1);
+    setTimeout(() => {
+        p1.classList.add('show');
+    }, 500);
+
+    // 1.5秒后文字渐变消失，切换为选择问题
+    setTimeout(() => {
+        p1.style.opacity = '0';
+        setTimeout(() => {
+            p1.textContent = '你是否接受小象想睡觉的冰淇淋？';
+            p1.style.opacity = '1';
+
+            // 添加两个选择按钮
+            const btnBox = document.createElement('div');
+            btnBox.style.marginTop = '20px';
+            btnBox.style.display = 'flex';
+            btnBox.style.gap = '20px';
+            btnBox.style.justifyContent = 'center';
+
+            const btnYes = document.createElement('button');
+            btnYes.className = 'btn-yes';
+            btnYes.textContent = '是';
+            btnYes.onclick = () => {
+                // 选“是”：继续浮现正文和栽赃选择
+                btnBox.remove();
+                showIceCreamFollowUp();
+            };
+
+            const btnDoubt = document.createElement('button');
+            btnDoubt.className = 'btn-no';
+            btnDoubt.textContent = '是…吗？';
+            btnDoubt.onclick = () => {
+                // 选“是…吗？”：触发彩蛋
+                closeModal('ending-modal');
+                setTimeout(() => {
+                    showEasterEggEnding();
+                }, 300);
+            };
+
+            btnBox.appendChild(btnYes);
+            btnBox.appendChild(btnDoubt);
+            textContainer.appendChild(btnBox);
+        }, 1000);
+    }, 2000);
+}
+
+// 接受冰淇淋后的后续剧情 + 栽赃选择
+function showIceCreamFollowUp() {
+    gameState.iceCreamChoiceDone = true;
+    saveGame();
+
+    const textContainer = document.getElementById('ending-text');
+    textContainer.innerHTML = '';
+
+    const lines = [
+        '小象想睡觉的冰淇淋确实很好吃，巧克力的苦味和牛奶的香味完美融合，炎炎夏日来上一口，实在令人满足。',
+        '在你吃冰淇淋的时候，小象在你的身边唠唠叨叨：',
+        '“我跟你说，这个水滴鱼绝对有问题，他肯定栽赃嫁祸呢，要不我们就跟老板说是他干的，我保证我的直觉肯定没错！”',
+        '你是否答应？'
+    ];
+
+    // 逐行浮现文字
+    lines.forEach((line, index) => {
+        const p = document.createElement('p');
+        p.textContent = line;
+        textContainer.appendChild(p);
+        setTimeout(() => {
+            p.classList.add('show');
+        }, index * 1000);
+    });
+
+    // 文字全部出现后，添加“是/否”选择按钮
+    setTimeout(() => {
+        const btnBox = document.createElement('div');
+        btnBox.style.marginTop = '20px';
+        btnBox.style.display = 'flex';
+        btnBox.style.gap = '20px';
+        btnBox.style.justifyContent = 'center';
+
+        const btnAgree = document.createElement('button');
+        btnAgree.className = 'btn-yes';
+        btnAgree.textContent = '是';
+        btnAgree.onclick = () => {
+            closeModal('ending-modal');
+            setTimeout(() => {
+                showEnding('ending3');
+            }, 300);
+        };
+
+        const btnRefuse = document.createElement('button');
+        btnRefuse.className = 'btn-no';
+        btnRefuse.textContent = '否';
+        btnRefuse.onclick = () => {
+            closeModal('ending-modal');
+            setTimeout(() => {
+                showEnding('ending4');
+            }, 300);
+        };
+
+        btnBox.appendChild(btnAgree);
+        btnBox.appendChild(btnRefuse);
+        textContainer.appendChild(btnBox);
+    }, lines.length * 1000);
+}
+
+// 彩蛋结局 + 结束后回退到选择界面
+function showEasterEggEnding() {
+    gameState.iceCreamChoiceDone = true;
+    saveGame();
+
+    showEnding('easterEgg', () => {
+        // 彩蛋结束后，重置选择状态，重新弹出选项框
+        gameState.xiaoxiangChoiceDone = false;
+        gameState.iceCreamChoiceDone = false;
+        saveGame();
+        setTimeout(() => {
+            showXiaoxiangFirstChoice();
+        }, 500);
+    });
+}
+// ===================== 水滴鱼抉择（存档点6） =====================
+function showShuidiyuChoice() {
+    gameState.lastSavePoint = 6;
+    saveGame();
+    // 先播放群聊消息
+    const messages = [
+        { sender: 'xiaoxiang', text: '我怀疑水滴鱼Johnson有问题' },
+        { sender: 'songshu', text: '？' },
+        { sender: 'songshu', text: '象哥你是不是发错地方了' },
+        { sender: 'shuidiyu', text: '？', changeAvatar: 'confused' },
+        { sender: 'shuidiyu', text: 'ber关我啥事啊？' },
+        { sender: 'xiaoxiang', text: '额………' },
+        { sender: 'xiaotang', text: '那个，就是' },
+        { sender: 'xiaotang', text: '其实我也怀疑鱼哥，他昨天也去老板办公室了，而且出来时候鬼鬼祟祟的' },
+        { sender: 'songshu', text: '虽然但是，为什么会注意这么细节的东西…' },
+        { sender: 'duhuanxiong', text: '可算知道你们上班不剪视频都在干啥了🥺' },
+        { sender: 'shuidiyu', text: '你怎么血口喷人？！你的证据呢？啊？', changeAvatar: 'angry' },
+        { sender: 'songshu', text: '我明白了，根据侦探小说定律，最开始被怀疑的，往往是最没用嫌疑的，最开始看着不像是凶手的，往往有可能最后反转成凶手！', changeAvatar: 'idea' },
+        { sender: 'songshu', text: '水滴鱼Johnson，就是这个被我们忽略的人！' },
+        { sender: 'songshu', text: '我推测，水滴鱼的作案动机，就是报复小犬院长。' },
+        { sender: 'songshu', text: '在前两天，小犬院长抢走了水滴鱼的一块蛋糕，所以，水滴鱼为了让老板感受到失去珍爱的食物的滋味，决定毁掉他的巧克力！' },
+        { sender: 'songshu', text: '如果我的猜测没错的话，巧克力上，肯定有水滴鱼的指印！' },
+        { sender: 'shuidiyu', text: '你这推测也太离谱了……我早上看那些巧克力都快化了，拿了一点想尝尝是什么口味，那个时候可能是粘上印子了' },
+        { sender: 'shuidiyu', text: '但是，从昨晚到第二天早上，时间过了这么久了，这么多人都可能碰过巧克力，我绝对不可能是第一个接触巧克力的' },
+        { sender: 'shuidiyu', text: '这点指印只能证明我早上吃过厨房的巧克力，凭什么因此推测我是昨天晚上偷拿巧克力的人！' },
+        { sender: 'shuidiyu', text: '来来来，我一身清白，我身正不怕影子歪，你们有什么要质疑的随便问，哥们大大方方就给你全解释了' },
+        { sender: 'xiaoxiang', text: '你昨天也进犬哥办公室了，你说说你昨天进他办公室干啥去了？' },
+        { sender: 'shuidiyu', text: '昨晚我偏头痛犯了，但是前天我去汇报工作的时候，把唯一的止痛药落在了老板办公室。' },
+        { sender: 'shuidiyu', text: '所以我去拿个药而已，别的我什么都没做哦' },
+        { sender: 'xiaotang', text: '那你走路姿势为什么那么奇怪？' },
+        { sender: 'shuidiyu', text: '因为我痔疮也犯了。', changeAvatar: 'confused' },
+        { sender: 'songshu', text: '……' },
+        { sender: 'xiaotang', text: '……' },
+        { sender: 'xiaoxiang', text: '……' },
+        { sender: 'duhuanxiong', text: '……' },
+        { sender: 'xiaoguanyuan', text: '……', changeAvatar: 'normal' },
+        { sender: 'duhuanxiong', text: '节哀，鱼桑。' },
+        { sender: 'xiaoguanyuan', text: '@羊头人 羊头人，你觉得水滴鱼是偷巧克力的吗？' }
+    ];
+    messages.forEach((msg, index) => {
+        setTimeout(() => {
+            if (msg.changeAvatar) {
+                gameState.avatarStatus.shuidiyu = msg.changeAvatar;
+                if (msg.sender === 'xiaoguanyuan') gameState.avatarStatus.xiaoguanyuan = msg.changeAvatar;
+                if (msg.sender === 'songshu') gameState.avatarStatus.songshu = msg.changeAvatar;
+                updateAllAvatars();
+            }
+            appendMessage('group', msg.sender, msg.text);
+        }, index * MSG_INTERVAL);
+    });
+    setTimeout(() => {
+        showChoice(
+            '你觉得水滴鱼是巧克力大盗吗？',
+            '是',
+            '否',
+            () => {
+                // 结局5
+                gameState.shuidiyuChoiceDone = true;
+                saveGame();
+                showEnding('ending5');
+            },
+            () => {
+                // 真相线
+                gameState.shuidiyuChoiceDone = true;
+                saveGame();
+                startTruthLine();
+            }
+        );
+    }, messages.length * MSG_INTERVAL);
+}
+// ===================== 真相线 =====================
+function startTruthLine() {
+    appendMessage('group', 'player', '我认为水滴鱼Johnson不是巧克力大盗。', true);
+    setTimeout(() => {
+        appendMessage('group', 'player', '真正的巧克力大盗，是小螳｀。', true);
+        setTimeout(() => {
+            const msgs = [
+                { sender: 'xiaoxiang', text: '？' },
+                { sender: 'duhuanxiong', text: '？' },
+                { sender: 'songshu', text: '好像……也只有……这一个答案了……' },
+                { sender: 'xiaotang', text: '？你，你血口喷人！' },
+                { sender: 'xiaotang', text: '你有什么证据！' }
+            ];
+            msgs.forEach((m, i) => {
+                setTimeout(() => appendMessage('group', m.sender, m.text), i * MSG_INTERVAL);
+            });
+            setTimeout(() => {
+                // 弹出证据输入框
+                openModal('evidence-modal');
+            }, msgs.length * MSG_INTERVAL);
+        }, MSG_INTERVAL);
+    }, MSG_INTERVAL);
+}
+function continueTruthLine() {
+    appendMessage('group', 'player', '证据，就是办公桌上，以及厨房案台上的黑色污渍。', true);
+    setTimeout(() => {
+        appendMessage('group', 'player', '昨天晚上下班前，小螳｀的电脑主机坏了，只有小螳｀碰过电脑主机，有怪味的黑色污渍，实际上就是那时粘上的机油。', true);
+        setTimeout(() => {
+            showTruthAndAchievement();
+        }, MSG_INTERVAL);
+    }, MSG_INTERVAL);
+}
+// 修正：真相→成就→群聊剧情的完整流程
+function showTruthAndAchievement() {
+    gameState.truthShown = true;
+    saveGame();
+    showEnding('truth', () => {
+        // 真相弹窗关闭后，延迟2秒弹出成就弹窗，避免一闪而过
+        setTimeout(() => {
+            gameState.achievementShown = true;
+            saveGame();
+            showEnding('achievement', () => {
+                // 成就弹窗关闭后，回到群聊继续剧情
+                continueAfterTruth();
+            });
+        }, 2000);
+    });
+}
+// 修正：真相后的群聊剧情
+function continueAfterTruth() {
+    // 切换小螳头像为伤心版
+    gameState.avatarStatus.xiaotang = 'sad';
+    updateAllAvatars();
+    saveGame();
+
+    const messages = [
+        { sender: 'xiaotang', text: '我……我错了' },
+        { sender: 'xiaotang', text: 'QAQ不要罚我工资……我给大家买巧克力吃嘛' },
+        { sender: 'xiaoguanyuan', text: '那行，小螳给每个人买两盒巧克力，写个检讨，今天下班之前放我办公桌上。' },
+        { sender: 'xiaotang', text: '好好好好好' }
+    ];
+    messages.forEach((msg, index) => {
+        setTimeout(() => {
+            appendMessage('group', msg.sender, msg.text);
+        }, index * MSG_INTERVAL);
+    });
+
+    // 所有消息发完后，弹出顶部提示
+    setTimeout(() => {
+        gameState.finalTipShown = true;
+        showTopTip('小犬院长给你发了一条消息');
+        saveGame();
+    }, messages.length * MSG_INTERVAL);
+}
+// ===================== 最终抉择（存档点7） =====================
+function showFinalChoice() {
+    gameState.lastSavePoint = 7; // 设置存档点
+    saveGame();
+    
+    // 小犬院长发消息
+    appendMessage('xiaoguanyuan', 'xiaoguanyuan', '羊头人，你这次干得不错，我给你涨工资。');
+    
+    showChoice(
+        '你是否接受奖励？',
+        '是',
+        '否',
+        () => {
+            gameState.finalChoiceDone = true;
+            saveGame();
+            showFinalGoodEnding();
+        },
+        () => {
+            gameState.finalChoiceDone = true;
+            saveGame();
+            showFinalSecretEnding();
+        }
+    );
+}
+// 修正：优秀员工结局
+function showFinalGoodEnding() {
+    // 创建黑色遮罩，渐变出现
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:10002;display:flex;justify-content:center;align-items:center;opacity:0;transition:opacity 2s ease;';
+    overlay.innerHTML = `
+        <div style="width:80%;max-width:600px;background:#f5f0e1;padding:40px;border-radius:8px;box-shadow:0 0 20px rgba(139,90,43,0.3);opacity:0;transition:opacity 2s ease;">
+            <div style="text-align:center;font-size:24px;font-weight:bold;color:#5c3317;margin-bottom:20px;font-family:'黑体';">最终结局【优秀员工】</div>
+            <div id="final-good-text" style="line-height:1.8;color:#333;font-size:16px;"></div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    // 背景渐变黑
+    setTimeout(() => {
+        overlay.style.opacity = '1';
+        setTimeout(() => {
+            // 羊皮纸页面渐显
+            overlay.querySelector('div > div').style.opacity = '1';
+            // 逐行浮现文字
+            const textLines = endings.finalGood.text;
+            const container = document.getElementById('final-good-text');
+            textLines.forEach((line, i) => {
+                const p = document.createElement('p');
+                p.textContent = line;
+                p.style.margin = '10px 0';
+                p.style.opacity = '0';
+                p.style.transition = 'opacity 1s ease';
+                container.appendChild(p);
+                setTimeout(() => { p.style.opacity = '1'; }, 1000 + i * 1000);
+            });
+        }, 1000);
+    }, 100);
+}
+// 修正：隐藏结局
+function showFinalSecretEnding() {
+    // 先显示提示弹窗
+    const tempModal = document.createElement('div');
+    tempModal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10002;display:flex;justify-content:center;align-items:center;opacity:0;transition:opacity 0.5s ease;';
+    tempModal.innerHTML = `<div style="background:#f5f0e1;padding:40px 60px;border-radius:8px;font-size:20px;font-weight:bold;color:#5c3317;font-family:'黑体';">最终结局…吗？</div>`;
+    document.body.appendChild(tempModal);
+    
+    // 弹窗淡入
+    setTimeout(() => {
+        tempModal.style.opacity = '1';
+        // 2秒后弹窗消失
+        setTimeout(() => {
+            tempModal.style.opacity = '0';
+            setTimeout(() => {
+                tempModal.remove();
+                // 回到聊天页面，自动发消息
+                appendMessage('xiaoguanyuan', 'player', '老板，我看了小螳买来的巧克力，那个包装盒我觉得熟悉。', true);
+                setTimeout(() => {
+                    appendMessage('xiaoguanyuan', 'player', '所以我又翻了一遍你的照片……我看到你拍照角落的巧克力盒子了。', true);
+                    setTimeout(() => {
+                        appendMessage('xiaoguanyuan', 'xiaoguanyuan', '哦？');
+                        setTimeout(() => {
+                            appendMessage('xiaoguanyuan', 'xiaoguanyuan', '眼力不错，不过，你怎么现在才发现呢？');
+                            
+                            // 聊天淡出，显示结局
+                            setTimeout(() => {
+                                const overlay = document.createElement('div');
+overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:10003;display:flex;justify-content:center;align-items:center;opacity:0;transition:opacity 2s ease;padding:20px;box-sizing:border-box;';
+overlay.innerHTML = `
+    <div style="width:100%;max-width:600px;max-height:80vh;background:#f5f0e1;padding:25px;border-radius:8px;box-shadow:0 0 20px rgba(139,90,43,0.3);opacity:0;transition:opacity 2s ease;overflow-y:auto;box-sizing:border-box;">
+        <div style="text-align:center;font-size:20px;font-weight:bold;color:#5c3317;margin-bottom:15px;font-family:'黑体';position:sticky;top:0;background:#f5f0e1;padding-bottom:10px;">恭喜你发现结局的另一面</div>
+        <div id="final-secret-text" style="line-height:1.7;color:#333;font-size:15px;"></div>
+    </div>
+`;
+                                document.body.appendChild(overlay);
+                                
+                                setTimeout(() => {
+                                    overlay.style.opacity = '1';
+                                    setTimeout(() => {
+                                        overlay.querySelector('div > div').style.opacity = '1';
+                                        // 逐行浮现文字
+                                        const textLines = endings.finalSecret.text;
+                                        const container = document.getElementById('final-secret-text');
+                                        textLines.forEach((line, i) => {
+                                            const p = document.createElement('p');
+                                            p.textContent = line;
+                                            p.style.margin = '10px 0';
+                                            p.style.opacity = '0';
+                                            p.style.transition = 'opacity 1s ease';
+                                            container.appendChild(p);
+                                            setTimeout(() => { p.style.opacity = '1'; }, 1000 + i * 1000);
+                                        });
+                                    }, 1000);
+                                }, 100);
+                            }, 2000);
+                        }, MSG_INTERVAL);
+                    }, MSG_INTERVAL);
+                }, MSG_INTERVAL);
+            }, 500);
+        }, 2000);
+    }, 100);
+}
+// ===================== 聊天发送通用入口 =====================
+function sendMessage(chatId) {
+    const input = document.getElementById('input-' + chatId);
+    const text = input.value.trim();
+    if (!text) return;
+    appendMessage(chatId, 'player', text, true);
+    input.value = '';
+    switch(chatId) {
+        case 'songshu':
+            if (gameState.songshuClueDone && gameState.avatarStatus.songshu === 'normal') {
+                setTimeout(() => { onSongshuReply(); }, MSG_INTERVAL);
+            }
+            break;
+        case 'duhuanxiong':
+            onDuhuanxiongSend(text);
+            break;
+        case 'xiaoxiang':
+            onXiaoxiangSend(text);
+            break;
+        default:
+            break;
+    }
+}
+// 监控页面点击计时
+function onMonitorLinkClick() {
+    window.open('https://lqllllllllll.github.io/-/');
+    if (!gameState.monitorViewed) {
+        gameState.monitorViewed = true;
+        saveGame();
+        setTimeout(() => {
+            if (!gameState.songshuTipShown) {
+                gameState.songshuTipShown = true;
+                showTopTip('松鼠斯Goh向你发了一条信息');
+                saveGame();
+            }
+        }, 5000);
+    }
+}
+// 页面初始化
+window.onload = function() {
+    loadGame();
+};
+</script>
+   
+    </div>
+</body>
+</html>
